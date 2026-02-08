@@ -62,7 +62,7 @@ class HiloCliente extends Thread {
             // 3.6 Miramos que quiere hacer el cliente (CREATE, READ, UPDATE, DELETE, READ_ALL)
             switch (peticion.getTipoOperacion()) {
                 case CREATE:
-                    break;                
+                    break;
                 case READ:
                     // 3.6.1 Leer: busca por ID
                     Usuario usuario = cad.leerUsuario(peticion.getIdUsuario());
@@ -83,7 +83,7 @@ class HiloCliente extends Thread {
                 case READ_ALL:
                     // 3.6.2 Buscar todos los empleados (maximo 50 --> Se modfica en EmpleadosCAD)
                     List<Usuario> usuarios = cad.leerUsuarios();
-                    
+
                     if (!usuarios.isEmpty()) {
                         respuesta.setUsuarios(usuarios);
                         respuesta.setExito(true);
@@ -98,18 +98,40 @@ class HiloCliente extends Thread {
                     respuesta.setExito(true);
                     respuesta.setMensaje("¡PONG! Servidor activo y escuchando");
                     break;
+                case LOGIN:
+                    // 1. Obtenemos el "usuario temporal" que mandó Android con las credenciales
+                    Usuario userLogin = peticion.getUsuario();
+
+                    if (userLogin != null) {
+                        // 2. Llamamos al CAD para validar (debes tener este método en tu CAD)
+                        // El método debería devolver el Usuario completo si existe, o null si no.
+                        Usuario usuarioValidado = cad.validarLogin(userLogin.getEmail());
+
+                        if (usuarioValidado != null) {
+                            respuesta.setUsuario(usuarioValidado); // Enviamos el perfil completo (nombre, rol, etc.)
+                            respuesta.setExito(true);
+                            respuesta.setMensaje("Login correcto. ¡Bienvenido!");
+                        } else {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje("Email o contraseña incorrectos.");
+                        }
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("No se han recibido datos de login.");
+                    }
+                    break;
                 default:
                     // Para todo lo demás
                     respuesta.setExito(false);
                     respuesta.setMensaje("Operacion desconocida (por ahora)");
                     break;
             }
-            
+
             // 4. ENVIAR LA RESPUESTA
             // Devolvemos el objeto respuesta lleno de datos
             oos.writeObject(respuesta);
             oos.flush();
-            
+
         } catch (Exception e) {
             System.out.println("Error general: " + e.getMessage());
         } finally {

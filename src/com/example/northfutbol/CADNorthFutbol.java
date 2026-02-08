@@ -415,13 +415,52 @@ public class CADNorthFutbol {
     public Usuario leerUsuario(Integer idUsuario) throws ExcepcionNF {
         Usuario u = null;
         // Usamos ? para evitar Inyección SQL
-        String dql = "SELECT * FROM usuario WHERE EMAIL = ?";
+        String dql = "SELECT * FROM usuario WHERE ID_USUARIO = ?";
 
         try {
             conectarBD();
             // Usar PreparedStatement es más seguro y eficiente para filtros
             PreparedStatement sentencia = conexion.prepareStatement(dql);
             sentencia.setObject(1, idUsuario);
+
+            ResultSet resultado = sentencia.executeQuery();
+
+            if (resultado.next()) {
+                u = new Usuario();
+                u.setIdUsuario(resultado.getInt("ID_USUARIO"));
+                u.setNombre(resultado.getString("NOMBRE"));
+                u.setEmail(resultado.getString("EMAIL"));
+                u.setRol(resultado.getString("ROL"));
+                u.setContrasenna(resultado.getString("CONTRASENNA"));
+                u.setFotoPerfil(resultado.getString("FOTO_PERFIL"));
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error al buscar el usuario. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+
+        return u; // Retorna el usuario o null si no lo encuentra
+    }
+    
+    public Usuario validarLogin(String email) throws ExcepcionNF {
+        Usuario u = null;
+        // Usamos ? para evitar Inyección SQL
+        String dql = "SELECT * FROM usuario WHERE EMAIL = ?";
+
+        try {
+            conectarBD();
+            // Usar PreparedStatement es más seguro y eficiente para filtros
+            PreparedStatement sentencia = conexion.prepareStatement(dql);
+            sentencia.setString(1, email);
 
             ResultSet resultado = sentencia.executeQuery();
 
