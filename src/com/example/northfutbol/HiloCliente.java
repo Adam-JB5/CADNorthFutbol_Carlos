@@ -104,7 +104,7 @@ class HiloCliente extends Thread {
                     if (userLogin != null) {
                         try {
                             // Validamos usuario
-                            Usuario usuarioValidado = cad.validarLogin(userLogin.getEmail());
+                            Usuario usuarioValidado = cad.validarLogin(userLogin.getEmail(), userLogin.getContrasenna());
                             if (usuarioValidado != null) {
                                 respuesta.setUsuario(usuarioValidado);
                                 respuesta.setExito(true);

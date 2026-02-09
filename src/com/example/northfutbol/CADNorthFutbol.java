@@ -742,16 +742,17 @@ public class CADNorthFutbol {
     //=====MÉTODOS APLICACIÓN======//
     //=============================//
     
-    public Usuario validarLogin(String email) throws ExcepcionNF {
+    public Usuario validarLogin(String email, String contrasenna) throws ExcepcionNF {
         Usuario u = null;
-        // Usamos ? para evitar Inyección SQL
-        String dql = "SELECT * FROM usuario WHERE EMAIL = ?";
+        //Annadido el trim hasta implementar el hasheo
+        String dql = "SELECT * FROM usuario WHERE email = ? AND TRIM(contrasenna) = ?";
 
         try {
             conectarBD();
             // Usar PreparedStatement es más seguro y eficiente para filtros
             PreparedStatement sentencia = conexion.prepareStatement(dql);
             sentencia.setString(1, email);
+            sentencia.setString(2, contrasenna);
 
             ResultSet resultado = sentencia.executeQuery();
 
