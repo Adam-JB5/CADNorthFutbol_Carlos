@@ -450,45 +450,6 @@ public class CADNorthFutbol {
 
         return u; // Retorna el usuario o null si no lo encuentra
     }
-    
-    public Usuario validarLogin(String email) throws ExcepcionNF {
-        Usuario u = null;
-        // Usamos ? para evitar Inyección SQL
-        String dql = "SELECT * FROM usuario WHERE EMAIL = ?";
-
-        try {
-            conectarBD();
-            // Usar PreparedStatement es más seguro y eficiente para filtros
-            PreparedStatement sentencia = conexion.prepareStatement(dql);
-            sentencia.setString(1, email);
-
-            ResultSet resultado = sentencia.executeQuery();
-
-            if (resultado.next()) {
-                u = new Usuario();
-                u.setIdUsuario(resultado.getInt("ID_USUARIO"));
-                u.setNombre(resultado.getString("NOMBRE"));
-                u.setEmail(resultado.getString("EMAIL"));
-                u.setRol(resultado.getString("ROL"));
-                u.setContrasenna(resultado.getString("CONTRASENNA"));
-                u.setFotoPerfil(resultado.getString("FOTO_PERFIL"));
-            }
-
-            resultado.close();
-            sentencia.close();
-            conexion.close();
-
-        } catch (SQLException ex) {
-            ExcepcionNF e = new ExcepcionNF();
-            e.setMensajeErrorUsuario("Error al buscar el usuario. Consulte con el administrador");
-            e.setCodigoErrorBD(ex.getErrorCode());
-            e.setMensajeErrorBD(ex.getMessage());
-            e.setSentenciaSQL(dql);
-            throw e;
-        }
-
-        return u; // Retorna el usuario o null si no lo encuentra
-    }
 
     public ArrayList<Usuario> leerUsuarios() throws ExcepcionNF {
         ArrayList<Usuario> listaUsuarios = new ArrayList<>();
@@ -774,6 +735,95 @@ public class CADNorthFutbol {
             throw e;
         }
 
+        return registrosAfectados;
+    }
+    
+    //=============================//
+    //=====MÉTODOS APLICACIÓN======//
+    //=============================//
+    
+    public Usuario validarLogin(String email) throws ExcepcionNF {
+        Usuario u = null;
+        // Usamos ? para evitar Inyección SQL
+        String dql = "SELECT * FROM usuario WHERE EMAIL = ?";
+
+        try {
+            conectarBD();
+            // Usar PreparedStatement es más seguro y eficiente para filtros
+            PreparedStatement sentencia = conexion.prepareStatement(dql);
+            sentencia.setString(1, email);
+
+            ResultSet resultado = sentencia.executeQuery();
+
+            if (resultado.next()) {
+                u = new Usuario();
+                u.setIdUsuario(resultado.getInt("ID_USUARIO"));
+                u.setNombre(resultado.getString("NOMBRE"));
+                u.setEmail(resultado.getString("EMAIL"));
+                u.setRol(resultado.getString("ROL"));
+                u.setContrasenna(resultado.getString("CONTRASENNA"));
+                u.setFotoPerfil(resultado.getString("FOTO_PERFIL"));
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error al buscar el usuario. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+
+        return u; // Retorna el usuario o null si no lo encuentra
+    }
+    
+    public Integer registrarUsuario(Usuario usuario) throws ExcepcionNF {
+        int registrosAfectados = 0;
+
+        String dml = "INSERT INTO usuario (id_usuario, nombre, email, rol, contrasenna, foto_perfil) VALUES (SEQ_USUARIO.nextval, ?, ?, ?, ?, ?)";
+
+        try {
+            conectarBD();
+            PreparedStatement ps = conexion.prepareStatement(dml);
+
+            ps.setString(1, usuario.getNombre());
+            ps.setString(2, usuario.getEmail());
+            ps.setString(3, usuario.getRol());
+            ps.setString(4, usuario.getContrasenna());
+            ps.setString(5, usuario.getFotoPerfil());
+
+            registrosAfectados = ps.executeUpdate();
+
+            ps.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 1:
+                    e.setMensajeErrorUsuario("Ya existe un usuario con ese nombre o email");
+                    break;
+                case 1400:
+                    e.setMensajeErrorUsuario("Todos los campos obligatorios deben estar rellenos");
+                    break;
+                case 2290:
+                    e.setMensajeErrorUsuario("El email o el rol no tienen un formato válido");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+
+            throw e;
+        }
         return registrosAfectados;
     }
 }

@@ -11,6 +11,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import pojosnorthfutbol.ExcepcionNF;
 import pojosnorthfutbol.Usuario;
 
 /**
@@ -70,10 +71,10 @@ class HiloCliente extends Thread {
                         // 3.6.1.2 Construimos la respuesta
                         respuesta.setUsuario(usuario); // Metemos el empleado en el sobre
                         respuesta.setExito(true); // Hay exito 
-                        respuesta.setMensaje("Empleado encontrado.");
+                        respuesta.setMensaje("Usuario encontrado.");
                     } else {
                         respuesta.setExito(false);
-                        respuesta.setMensaje("No existe un empleado con ID: " + peticion.getIdUsuario());
+                        respuesta.setMensaje("No existe un usuario con ID: " + peticion.getIdUsuario());
                     }
                     break;
                 case UPDATE:
@@ -87,7 +88,7 @@ class HiloCliente extends Thread {
                     if (!usuarios.isEmpty()) {
                         respuesta.setUsuarios(usuarios);
                         respuesta.setExito(true);
-                        respuesta.setMensaje("Listado recuperado con: " + usuarios.size() + " empleados.");
+                        respuesta.setMensaje("Listado recuperado con: " + usuarios.size() + " usuarios.");
                     } else {
                         respuesta.setExito(false);
                         respuesta.setMensaje("La base de datos parece vacía");
@@ -99,25 +100,49 @@ class HiloCliente extends Thread {
                     respuesta.setMensaje("¡PONG! Servidor activo y escuchando");
                     break;
                 case LOGIN:
-                    // 1. Obtenemos el "usuario temporal" que mandó Android con las credenciales
                     Usuario userLogin = peticion.getUsuario();
-
                     if (userLogin != null) {
-                        // 2. Llamamos al CAD para validar (debes tener este método en tu CAD)
-                        // El método debería devolver el Usuario completo si existe, o null si no.
-                        Usuario usuarioValidado = cad.validarLogin(userLogin.getEmail());
-
-                        if (usuarioValidado != null) {
-                            respuesta.setUsuario(usuarioValidado); // Enviamos el perfil completo (nombre, rol, etc.)
-                            respuesta.setExito(true);
-                            respuesta.setMensaje("Login correcto. ¡Bienvenido!");
-                        } else {
+                        try {
+                            // Validamos usuario
+                            Usuario usuarioValidado = cad.validarLogin(userLogin.getEmail());
+                            if (usuarioValidado != null) {
+                                respuesta.setUsuario(usuarioValidado);
+                                respuesta.setExito(true);
+                                respuesta.setMensaje("Login correcto. ¡Bienvenido!");
+                            } else {
+                                respuesta.setExito(false);
+                                respuesta.setMensaje("Email o contraseña incorrectos.");
+                            }
+                        } catch (ExcepcionNF e) {
                             respuesta.setExito(false);
-                            respuesta.setMensaje("Email o contraseña incorrectos.");
+                            respuesta.setMensaje(e.getMensajeErrorUsuario());
                         }
                     } else {
                         respuesta.setExito(false);
                         respuesta.setMensaje("No se han recibido datos de login.");
+                    }
+                    break;
+                case REGISTER:
+                    Usuario nuevoUsuario = peticion.getUsuario();
+                    if (nuevoUsuario != null) {
+                        try {
+                            Integer registros = cad.registrarUsuario(nuevoUsuario);
+
+                            if (registros != null && registros > 0) {
+                                respuesta.setExito(true);
+                                respuesta.setUsuario(nuevoUsuario);
+                                respuesta.setMensaje("Usuario registrado correctamente.");
+                            } else {
+                                respuesta.setExito(false);
+                                respuesta.setMensaje("No se pudo registrar el usuario.");
+                            }
+                        } catch (ExcepcionNF e) {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje(e.getMensajeErrorUsuario());
+                        }
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("No se han recibido datos de registro.");
                     }
                     break;
                 default:

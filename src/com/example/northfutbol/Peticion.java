@@ -29,6 +29,7 @@ public class Peticion implements Serializable{
         READ_ALL,   // Lee todos los usuario
         UPDATE,     // Modifica un usuario
         LOGIN,
+        REGISTER,
         DELETE,     //
         PING        //
     }
@@ -66,7 +67,7 @@ public class Peticion implements Serializable{
         this.usuario = usuario;
     }
     
-    // Constructor para Login
+    // Constructor para Login/Register
     public Peticion(TipoOperacion tipoOperacion, Usuario usuario) {
         this.tipoOperacion = tipoOperacion;
         this.usuario = usuario;
