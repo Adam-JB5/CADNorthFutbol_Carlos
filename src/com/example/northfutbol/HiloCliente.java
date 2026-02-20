@@ -80,9 +80,29 @@ class HiloCliente extends Thread {
                 case UPDATE:
                     break;
                 case DELETE:
+                    Usuario usuarioEliminado = peticion.getUsuario();
+                    if (usuarioEliminado != null) {
+                        try {
+                            Integer registros = cad.eliminarUsuario(usuarioEliminado.getIdUsuario());
+
+                            if (registros != null && registros > 0) {
+                                respuesta.setExito(true);
+                                respuesta.setUsuario(usuarioEliminado);
+                                respuesta.setMensaje("Usuario eliminado correctamente.");
+                            } else {
+                                respuesta.setExito(false);
+                                respuesta.setMensaje("No se pudo eliminar el usuario.");
+                            }
+                        } catch (ExcepcionNF e) {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje(e.getMensajeErrorUsuario());
+                        }
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("No se han recibido datos de registro.");
+                    }
                     break;
                 case READ_ALL:
-                    // 3.6.2 Buscar todos los empleados (maximo 50 --> Se modfica en EmpleadosCAD)
                     List<Usuario> usuarios = cad.leerUsuarios();
 
                     if (!usuarios.isEmpty()) {
