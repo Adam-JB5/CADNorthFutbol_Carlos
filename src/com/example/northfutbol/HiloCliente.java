@@ -145,6 +145,29 @@ class HiloCliente extends Thread {
                         respuesta.setMensaje("No se han recibido datos de registro.");
                     }
                     break;
+                case UPDATE_USER_NAME_EMAIL:
+                    Usuario usuarioModificado = peticion.getUsuario();
+                    if (usuarioModificado != null) {
+                        try {
+                            Integer registros = cad.modificarNombreEmailUsuario(usuarioModificado.getIdUsuario(), usuarioModificado);
+                            
+                            if (registros != null && registros > 0) {
+                                respuesta.setExito(true);
+                                respuesta.setUsuario(usuarioModificado);
+                                respuesta.setMensaje("Usuario registrado correctamente.");
+                            } else {
+                                respuesta.setExito(false);
+                                respuesta.setMensaje("No se pudo registrar el usuario.");
+                            }
+                        } catch (ExcepcionNF e) {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje(e.getMensajeErrorUsuario());
+                        }
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("No se han recibido datos de modificación");
+                    }
+                    break;
                 default:
                     // Para todo lo demás
                     respuesta.setExito(false);

@@ -30,6 +30,7 @@ public class Peticion implements Serializable{
         UPDATE,     // Modifica un usuario
         LOGIN,
         REGISTER,
+        UPDATE_USER_NAME_EMAIL,
         DELETE,     //
         PING        //
     }

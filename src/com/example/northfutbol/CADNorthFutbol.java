@@ -827,4 +827,53 @@ public class CADNorthFutbol {
         }
         return registrosAfectados;
     }
+    
+    public Integer modificarNombreEmailUsuario(Integer idUsuario, Usuario usuario) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "UPDATE usuario SET nombre = ?, email = ? WHERE id_usuario = ?";
+        
+        try {
+            conectarBD();
+
+            PreparedStatement ps = conexion.prepareStatement(dml);
+
+            ps.setString(1, usuario.getNombre());
+            ps.setString(2, usuario.getEmail());
+            ps.setObject(3, idUsuario, java.sql.Types.INTEGER);
+
+            registrosAfectados = ps.executeUpdate();
+
+            ps.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 1:
+                    e.setMensajeErrorUsuario("Ya existe un usuario con ese nombre o email");
+                    break;
+                case 1407:
+                    e.setMensajeErrorUsuario("Todos los campos obligatorios deben estar rellenos");
+                    break;
+                case 2290:
+                    e.setMensajeErrorUsuario("El email o el rol no tienen un formato válido");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+                    System.out.println(ex.getErrorCode());
+                    System.out.println(ex.getMessage());
+                    System.out.println(dml);
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+
+            throw e;
+        }
+
+        return registrosAfectados;
+        
+    }
 }
