@@ -13,7 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import jdk.internal.org.objectweb.asm.Type;
 import pojosnorthfutbol.Equipo;
 import pojosnorthfutbol.ExcepcionNF;
 import pojosnorthfutbol.Jugador;
@@ -630,13 +629,13 @@ public class CADNorthFutbol {
             PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
 
             // Relación con Equipo
-            sentenciaPreparada.setObject(1, jugador.getEquipo().getIdEquipo(), Type.INT);
+            sentenciaPreparada.setObject(1, jugador.getEquipo().getIdEquipo(), java.sql.Types.INTEGER);
             sentenciaPreparada.setString(2, jugador.getNombre());
             sentenciaPreparada.setString(3, jugador.getApellido());
             sentenciaPreparada.setString(4, jugador.getPosicion());
             sentenciaPreparada.setObject(5, new java.sql.Date(jugador.getFechaNacimiento().getTime()));
             sentenciaPreparada.setString(6, jugador.getPaisOrigen());
-            sentenciaPreparada.setObject(7, jugador.getDorsal(), Type.INT);
+            sentenciaPreparada.setObject(7, jugador.getDorsal(), java.sql.Types.INTEGER);
 
             registrosAfectados = sentenciaPreparada.executeUpdate();
 
@@ -701,8 +700,8 @@ public class CADNorthFutbol {
             sentenciaLlamable.setString(3, jugador.getPosicion());
             sentenciaLlamable.setObject(4, new java.sql.Date(jugador.getFechaNacimiento().getTime()));
             sentenciaLlamable.setString(5, jugador.getPaisOrigen());
-            sentenciaLlamable.setObject(6, jugador.getDorsal(), Type.INT);
-            sentenciaLlamable.setObject(7, jugador.getEquipo().getIdEquipo(), Type.INT);
+            sentenciaLlamable.setObject(6, jugador.getDorsal(), java.sql.Types.INTEGER);
+            sentenciaLlamable.setObject(7, jugador.getEquipo().getIdEquipo(), java.sql.Types.INTEGER);
             sentenciaLlamable.setObject(8, idJugador, java.sql.Types.INTEGER);
 
             registrosAfectados = sentenciaLlamable.executeUpdate();
