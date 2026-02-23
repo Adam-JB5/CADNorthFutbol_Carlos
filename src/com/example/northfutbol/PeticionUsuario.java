@@ -17,7 +17,7 @@ import pojosnorthfutbol.Usuario;
  * IMPORTANTE_ es serializable para poder viajar por la red convertida en bytes.
  * @author DAM209
  */
-public class Peticion implements Serializable{
+public class PeticionUsuario implements Serializable{
     // 1. IDENTIFICACIÓN: creamos un identificador único de versión
     // de serializacioón   
     private static final long serialVersionUID = 1L;
@@ -46,30 +46,30 @@ public class Peticion implements Serializable{
     
     // 6. CONSTRUCTORES
     // 6.1. Vacío
-    public Peticion() {
+    public PeticionUsuario() {
         // Nada
     }
     
     // 6.2. Contructor para Read_all
-    public Peticion(TipoOperacion tipoOperacion) {
+    public PeticionUsuario(TipoOperacion tipoOperacion) {
         this.tipoOperacion = tipoOperacion;
     }
     
     // 6.3. Contructor para Read/Delete
-    public Peticion(TipoOperacion tipoOperacion, int idUsuario) {
+    public PeticionUsuario(TipoOperacion tipoOperacion, int idUsuario) {
         this.tipoOperacion = tipoOperacion;
         this.idUsuario = idUsuario;
     }
     
     // 6.4. Contructor para Create/Update
-    public Peticion(TipoOperacion tipoOperacion, int idUsuario, Usuario usuario) {
+    public PeticionUsuario(TipoOperacion tipoOperacion, int idUsuario, Usuario usuario) {
         this.tipoOperacion = tipoOperacion;
         this.idUsuario = idUsuario;
         this.usuario = usuario;
     }
     
     // Constructor para Login/Register
-    public Peticion(TipoOperacion tipoOperacion, Usuario usuario) {
+    public PeticionUsuario(TipoOperacion tipoOperacion, Usuario usuario) {
         this.tipoOperacion = tipoOperacion;
         this.usuario = usuario;
     }

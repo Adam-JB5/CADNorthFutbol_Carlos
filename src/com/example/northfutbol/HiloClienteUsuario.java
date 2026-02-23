@@ -22,14 +22,14 @@ import pojosnorthfutbol.Usuario;
  *
  * @author DAM209
  */
-class HiloCliente extends Thread {
+class HiloClienteUsuario extends Thread {
 
     // 1. ATRIBUTOS: Declaramos el socket, es decir, el "teléfono" por el que hablamos con este cleinte
     // en particular
     private Socket socket;
 
     // 2. CONSTRUCTOR
-    public HiloCliente(Socket socket) {
+    public HiloClienteUsuario(Socket socket) {
         super();
         this.socket = socket;
     }
@@ -51,14 +51,14 @@ class HiloCliente extends Thread {
             // 3.3 Recibimos una petición (READ)
             // El cliente nos envia un objeto Peticion serializado
             // Nos quedamos bloqueados esperando a que llegue entera
-            Peticion peticion = (Peticion) ois.readObject();
+            PeticionUsuario peticion = (PeticionUsuario) ois.readObject();
 
             // 3.4. Procesamos la peticon
             // Instanciamos el CAD para hablar con la base de datos
             CADNorthFutbol cad = new CADNorthFutbol();
 
             // 3.5. preparamos la respuesta
-            Respuesta respuesta = new Respuesta();
+            RespuestaUsuario respuesta = new RespuestaUsuario();
 
             // 3.6 Miramos que quiere hacer el cliente (CREATE, READ, UPDATE, DELETE, READ_ALL)
             switch (peticion.getTipoOperacion()) {

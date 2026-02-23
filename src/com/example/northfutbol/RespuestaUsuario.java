@@ -16,7 +16,7 @@ import pojosnorthfutbol.Usuario;
  * de la operacion (exito/fracaso) y los datos solicitados
  * @author DAM209
  */
-public class Respuesta implements Serializable{
+public class RespuestaUsuario implements Serializable{
     // 1. IDENTIFICACIÓN: creamos un identificador único de versión de
     // serialización
     private static final long serialVersionUID = 1L;
@@ -36,12 +36,12 @@ public class Respuesta implements Serializable{
    
    // 6. CONSTRUCTORES
    // 6.1. Constructor vacío
-   public Respuesta() {
+   public RespuestaUsuario() {
        
    }
    
    // 6.2. Constructor completo
-   public Respuesta(boolean exito, String mensaje, Usuario usuario, List<Usuario> usuarios) {
+   public RespuestaUsuario(boolean exito, String mensaje, Usuario usuario, List<Usuario> usuarios) {
        super();
        this.exito = exito;
        this.mensaje = mensaje;

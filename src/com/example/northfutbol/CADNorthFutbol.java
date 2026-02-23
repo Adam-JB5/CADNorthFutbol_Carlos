@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import pojosnorthfutbol.Equipo;
 import pojosnorthfutbol.ExcepcionNF;
 import pojosnorthfutbol.Jugador;
+import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
 
 /**
@@ -736,11 +737,10 @@ public class CADNorthFutbol {
 
         return registrosAfectados;
     }
-    
+
     //=============================//
     //=====MÉTODOS APLICACIÓN======//
     //=============================//
-    
     public Usuario validarLogin(String email, String contrasenna) throws ExcepcionNF {
         Usuario u = null;
         //Annadido el trim hasta implementar el hasheo
@@ -780,7 +780,7 @@ public class CADNorthFutbol {
 
         return u; // Retorna el usuario o null si no lo encuentra
     }
-    
+
     public Integer registrarUsuario(Usuario usuario) throws ExcepcionNF {
         int registrosAfectados = 0;
 
@@ -826,11 +826,11 @@ public class CADNorthFutbol {
         }
         return registrosAfectados;
     }
-    
+
     public Integer modificarNombreEmailUsuario(Integer idUsuario, Usuario usuario) throws ExcepcionNF {
         int registrosAfectados = 0;
         String dml = "UPDATE usuario SET nombre = ?, email = ? WHERE id_usuario = ?";
-        
+
         try {
             conectarBD();
 
@@ -873,6 +873,64 @@ public class CADNorthFutbol {
         }
 
         return registrosAfectados;
-        
+
+    }
+
+    public ArrayList<Noticia> leerNoticias() throws ExcepcionNF {
+        ArrayList<Noticia> listaNoticias = new ArrayList<>();
+        Noticia n;
+        Equipo eq;
+
+        // Hacemos un INNER JOIN para traer el NOMBRE del equipo junto a la NOTICIA
+        String dql = "SELECT N.*, E.NOMBRE AS NOMBRE_EQUIPO, E.ESCUDO "
+                + "FROM NF.NOTICIA N "
+                + "INNER JOIN NF.EQUIPO E ON N.ID_EQUIPO = E.ID_EQUIPO "
+                + "ORDER BY N.FECHA_CREACION DESC";
+
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            ResultSet resultado = sentencia.executeQuery(dql);
+
+            while (resultado.next()) {
+                n = new Noticia();
+
+                // Mapeo de campos básicos
+                n.setIdNoticia(resultado.getInt("ID_NOTICIA"));
+                n.setTitulo(resultado.getString("TITULO"));
+                n.setSubtitulo(resultado.getString("SUBTITULO")); // Soporta NULL automáticamente
+                n.setImagen(resultado.getString("IMAGEN"));
+                n.setFechaCreacion(resultado.getDate("FECHA_CREACION"));
+
+                // El campo CLOB se puede leer como String directamente en la mayoría de drivers modernos
+                n.setContenido(resultado.getString("CONTENIDO"));
+
+                // Relación con Equipo (ID_EQUIPO)
+                eq = new Equipo();
+                eq.setIdEquipo(resultado.getInt("ID_EQUIPO"));
+                eq.setNombre(resultado.getString("NOMBRE"));
+                n.setEquipo(eq);
+
+                listaNoticias.add(n);
+            }
+
+            // Cierre de recursos
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            // Tu gestión de excepciones personalizada
+            ExcepcionNF e = new ExcepcionNF();
+
+            e.setMensajeErrorUsuario("Error al cargar las noticias. Inténtelo más tarde.");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+
+            throw e;
+        }
+
+        return listaNoticias;
     }
 }
