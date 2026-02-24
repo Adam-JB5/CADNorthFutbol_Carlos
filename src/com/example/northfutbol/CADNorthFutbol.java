@@ -881,11 +881,10 @@ public class CADNorthFutbol {
         Noticia n;
         Equipo eq;
 
-        // Hacemos un INNER JOIN para traer el NOMBRE del equipo junto a la NOTICIA
-        String dql = "SELECT N.*, E.NOMBRE AS NOMBRE_EQUIPO, E.ESCUDO "
-                + "FROM NF.NOTICIA N "
-                + "INNER JOIN NF.EQUIPO E ON N.ID_EQUIPO = E.ID_EQUIPO "
-                + "ORDER BY N.FECHA_CREACION DESC";
+        String dql = "SELECT N.*, E.NOMBRE "
+           + "FROM NF.NOTICIA N "
+           + "INNER JOIN NF.EQUIPO E ON N.ID_EQUIPO = E.ID_EQUIPO "
+           + "ORDER BY N.FECHA_CREACION DESC";
 
         try {
             conectarBD();
