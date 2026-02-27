@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import pojosnorthfutbol.Equipo;
 import pojosnorthfutbol.ExcepcionNF;
 import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
@@ -60,6 +61,9 @@ class HiloClienteUsuario extends Thread {
             } else if (objeto instanceof PeticionNoticia) {
                 System.out.println("DEBUG: Es PeticionNoticia");
                 manejarNoticias((PeticionNoticia) objeto, oos, cad);
+            } else if (objeto instanceof PeticionEquipo) {
+                System.out.println("DEBUG: Es PeticionEquipo");
+                manejarEquipos((PeticionEquipo) objeto, oos, cad);
             } else {
                 System.out.println("DEBUG: El objeto NO es de ningun tipo conocido");
             }
@@ -88,12 +92,12 @@ class HiloClienteUsuario extends Thread {
                 case CREATE:
                     Noticia nuevaNoticia = peticion.getNoticia();
                     if (nuevaNoticia != null) {
-                        Integer idGenerado = cad.insertarNoticia(nuevaNoticia);
+                        Integer filasAfectadas = cad.insertarNoticia(nuevaNoticia);
 
-                        if (idGenerado != null && idGenerado > 0) {
+                        if (filasAfectadas != null && filasAfectadas > 0) {
                             respuesta.setExito(true);
                             respuesta.setMensaje("Noticia insertada correctamente en Oracle.");
-                            System.out.println("DEBUG: Noticia insertada con ID: " + idGenerado);
+                            System.out.println("DEBUG: Noticia insertada, filas modificadas: " + filasAfectadas);
                         } else {
                             respuesta.setExito(false);
                             respuesta.setMensaje("Error: No se pudo insertar la noticia.");
@@ -126,6 +130,55 @@ class HiloClienteUsuario extends Thread {
         oos.writeObject(respuesta);
         oos.flush();
         System.out.println("DEBUG: Respuesta de noticia enviada a Android");
+    }
+    
+    private void manejarEquipos(PeticionEquipo peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
+        System.out.println("DEBUG: Entrando en manejarEquipos... Operación: " + peticion.getTipoOperacion());
+        RespuestaEquipo respuesta = new RespuestaEquipo();
+
+        try {
+            switch (peticion.getTipoOperacion()) {
+                case CREATE:
+                    Equipo nuevoEquipo = peticion.getEquipo();
+                    if (nuevoEquipo != null) {
+                        Integer filasAfectadas = cad.insertarEquipo(nuevoEquipo);
+
+                        if (filasAfectadas != null && filasAfectadas > 0) {
+                            respuesta.setExito(true);
+                            respuesta.setMensaje("Equipo insertado correctamente en Oracle.");
+                            System.out.println("DEBUG: Equipo insertado, filas modificadas: " + filasAfectadas);
+                        } else {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje("Error: No se pudo insertar el equipo.");
+                        }
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("No se recibió el objeto Equipo.");
+                    }
+                    break;
+
+                case READ_ALL: // El caso que tenías antes
+                    ArrayList<Equipo> lista = cad.leerEquipos();
+                    respuesta.setEquipos(lista);
+                    respuesta.setExito(lista != null);
+                    respuesta.setMensaje("Lista de noticias recuperada.");
+                    break;
+
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación de noticia no soportada.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error en manejarEquipos: " + e.getMessage());
+            e.printStackTrace();
+            respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
+        }
+
+        oos.writeObject(respuesta);
+        oos.flush();
+        System.out.println("DEBUG: Respuesta de equipo enviada a Android");
     }
 
     private void manejarUsuarios(PeticionUsuario peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
