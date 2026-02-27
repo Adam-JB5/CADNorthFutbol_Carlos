@@ -25,14 +25,14 @@ import pojosnorthfutbol.Usuario;
  *
  * @author DAM209
  */
-class HiloClienteUsuario extends Thread {
+class HiloCliente extends Thread {
 
     // 1. ATRIBUTOS: Declaramos el socket, es decir, el "teléfono" por el que hablamos con este cleinte
     // en particular
     private Socket socket;
 
     // 2. CONSTRUCTOR
-    public HiloClienteUsuario(Socket socket) {
+    public HiloCliente(Socket socket) {
         super();
         this.socket = socket;
     }

@@ -72,7 +72,7 @@ public class Servidor {
                 // Si atendieramos al cliente aquí, nadie más podría conectarse
                 // mientras tanto
                 //Por eso, crear im trabajador (HiloCliente) dedicado sollo a este usuario
-                HiloClienteUsuario hilo = new HiloClienteUsuario(socket);
+                HiloCliente hilo = new HiloCliente(socket);
                 
                 // 4.3 ARRANCAR EL HILO
                 hilo.start();
