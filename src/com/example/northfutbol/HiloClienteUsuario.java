@@ -80,26 +80,52 @@ class HiloClienteUsuario extends Thread {
     }
 
     private void manejarNoticias(PeticionNoticia peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
-        System.out.println("DEBUG: Entrando en manejarNoticias..."); // LOG 1
+        System.out.println("DEBUG: Entrando en manejarNoticias... Operación: " + peticion.getTipoOperacion());
         RespuestaNoticia respuesta = new RespuestaNoticia();
 
         try {
-            System.out.println("DEBUG: Llamando a cad.leerNoticias()..."); // LOG 2
-            ArrayList<Noticia> lista = cad.leerNoticias();
+            switch (peticion.getTipoOperacion()) {
+                case CREATE:
+                    Noticia nuevaNoticia = peticion.getNoticia();
+                    if (nuevaNoticia != null) {
+                        Integer idGenerado = cad.insertarNoticia(nuevaNoticia);
 
-            System.out.println("DEBUG: Noticias encontradas: " + (lista != null ? lista.size() : "null")); // LOG 3
+                        if (idGenerado != null && idGenerado > 0) {
+                            respuesta.setExito(true);
+                            respuesta.setMensaje("Noticia insertada correctamente en Oracle.");
+                            System.out.println("DEBUG: Noticia insertada con ID: " + idGenerado);
+                        } else {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje("Error: No se pudo insertar la noticia.");
+                        }
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("No se recibió el objeto Noticia.");
+                    }
+                    break;
 
-            respuesta.setNoticias(lista);
-            respuesta.setExito(lista != null && !lista.isEmpty());
+                case READ_ALL: // El caso que tenías antes
+                    ArrayList<Noticia> lista = cad.leerNoticias();
+                    respuesta.setNoticias(lista);
+                    respuesta.setExito(lista != null);
+                    respuesta.setMensaje("Lista de noticias recuperada.");
+                    break;
+
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación de noticia no soportada.");
+                    break;
+            }
         } catch (Exception e) {
-            System.out.println("DEBUG: Error dentro de manejarNoticias: " + e.getMessage());
+            System.out.println("DEBUG: Error en manejarNoticias: " + e.getMessage());
             e.printStackTrace();
             respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
         }
 
         oos.writeObject(respuesta);
         oos.flush();
-        System.out.println("DEBUG: Respuesta enviada a Android"); // LOG 4
+        System.out.println("DEBUG: Respuesta de noticia enviada a Android");
     }
 
     private void manejarUsuarios(PeticionUsuario peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {

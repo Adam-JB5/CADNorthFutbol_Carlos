@@ -28,8 +28,8 @@ public class CADNorthFutbol {
     private Connection conexion;
 
     //private String HOST = "jdbc:oracle:thin:@172.16.212.1:1521:test";
-    private String HOST = "jdbc:oracle:thin:@192.168.1.209:1521:test";
-    //private String HOST = "jdbc:oracle:thin:@172.16.209.1:1521:test";
+    //private String HOST = "jdbc:oracle:thin:@192.168.1.209:1521:test";
+    private String HOST = "jdbc:oracle:thin:@172.16.209.1:1521:test";
     private String USERBD = "NF";
     private String PASSWORD = "kk";
 
@@ -931,5 +931,45 @@ public class CADNorthFutbol {
         }
 
         return listaNoticias;
+    }
+    
+    public Integer insertarNoticia(Noticia noticia) throws ExcepcionNF{
+        int registrosAfectados = 0;
+
+        String dml = "INSERT INTO noticia (id_noticia, id_equipo, titulo, subtitulo, imagen, contenido, fecha_creacion) VALUES (SEQ_NOTICIA.nextval, ?, ?, ?, ?, ?, SYSDATE)";
+
+        try {
+            conectarBD();
+            PreparedStatement ps = conexion.prepareStatement(dml);
+
+            ps.setObject(1, noticia.getEquipo().getIdEquipo(), java.sql.Types.INTEGER);
+            ps.setString(2, noticia.getTitulo());
+            ps.setString(3, noticia.getSubtitulo());
+            ps.setString(4, noticia.getImagen());
+            ps.setString(5, noticia.getContenido());
+
+            registrosAfectados = ps.executeUpdate();
+
+            ps.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 1400:
+                    e.setMensajeErrorUsuario("Todos los campos son obligatorios");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+
+            throw e;
+        }
+        return registrosAfectados;
     }
 }
