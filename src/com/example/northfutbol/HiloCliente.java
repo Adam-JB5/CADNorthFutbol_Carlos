@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import pojosnorthfutbol.Equipo;
 import pojosnorthfutbol.ExcepcionNF;
+import pojosnorthfutbol.Jugador;
 import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
 
@@ -64,6 +65,9 @@ class HiloCliente extends Thread {
             } else if (objeto instanceof PeticionEquipo) {
                 System.out.println("DEBUG: Es PeticionEquipo");
                 manejarEquipos((PeticionEquipo) objeto, oos, cad);
+            } else if (objeto instanceof PeticionJugador) {
+                System.out.println("DEBUG: Es PeticionJugador");
+                manejarJugadores((PeticionJugador) objeto, oos, cad);
             } else {
                 System.out.println("DEBUG: El objeto NO es de ningun tipo conocido");
             }
@@ -319,5 +323,54 @@ class HiloCliente extends Thread {
         }
         oos.writeObject(respuesta);
         oos.flush();
+    }
+    
+    private void manejarJugadores(PeticionJugador peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
+        System.out.println("DEBUG: Entrando en manejarJugadores... Operación: " + peticion.getTipoOperacion());
+        RespuestaJugador respuesta = new RespuestaJugador();
+
+        try {
+            switch (peticion.getTipoOperacion()) {
+                case CREATE:
+                    Jugador nuevoJugador = peticion.getJugador();
+                    if (nuevoJugador != null) {
+                        Integer filasAfectadas = cad.insertarJugador(nuevoJugador);
+
+                        if (filasAfectadas != null && filasAfectadas > 0) {
+                            respuesta.setExito(true);
+                            respuesta.setMensaje("Jugador insertado correctamente en Oracle.");
+                            System.out.println("DEBUG: Jugador insertado, filas modificadas: " + filasAfectadas);
+                        } else {
+                            respuesta.setExito(false);
+                            respuesta.setMensaje("Error: No se pudo insertar el jugador.");
+                        }
+                    } else {
+                        respuesta.setExito(false);
+                        respuesta.setMensaje("No se recibió el objeto Jugador.");
+                    }
+                    break;
+
+                case READ_ALL: // El caso que tenías antes
+                    ArrayList<Jugador> lista = cad.leerJugadores();
+                    respuesta.setJugadores(lista);
+                    respuesta.setExito(lista != null);
+                    respuesta.setMensaje("Lista de noticias recuperada.");
+                    break;
+
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación de noticia no soportada.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error en manejarJugadores: " + e.getMessage());
+            e.printStackTrace();
+            respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
+        }
+
+        oos.writeObject(respuesta);
+        oos.flush();
+        System.out.println("DEBUG: Respuesta de jugador enviada a Android");
     }
 }
