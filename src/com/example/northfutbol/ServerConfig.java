@@ -10,10 +10,10 @@ package com.example.northfutbol;
  * @author DAM209
  */
 public class ServerConfig {
-    public static final Environment ENTORNO_ACTUAL = Environment.CASA;
+    public static final Environment ENTORNO_ACTUAL = Environment.IRONTEC;
     
     public enum Environment {
-        CASA, CLASE;
+        CASA, CLASE, IRONTEC;
     }
     
     public static String getDbIp() {
@@ -23,6 +23,9 @@ public class ServerConfig {
                 
             case CLASE:
                 return "172.16.209.1";
+                
+            case IRONTEC:
+                return "10.177.104.210";
                 
             default:
                 return "172.16.209.1";
