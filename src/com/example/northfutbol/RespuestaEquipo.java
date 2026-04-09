@@ -8,6 +8,7 @@ package com.example.northfutbol;
 import java.io.Serializable;
 import java.util.List;
 import pojosnorthfutbol.Equipo;
+import pojosnorthfutbol.Jugador;
 
 /**
  * RESPUESTA
@@ -33,6 +34,8 @@ public class RespuestaEquipo implements Serializable{
     
     // 5. ¿Y SI HEMOS PEDIDO MUCHOS EMPLEADOS? (Read_all)
    private List<Equipo> equipos;
+   
+   private List<Jugador> jugadores;
    
    // 6. CONSTRUCTORES
    // 6.1. Constructor vacío
@@ -82,6 +85,16 @@ public class RespuestaEquipo implements Serializable{
     public void setEquipos(List<Equipo> equipos) {
         this.equipos = equipos;
     }
+
+    public List<Jugador> getJugadores() {
+        return jugadores;
+    }
+
+    public void setJugadores(List<Jugador> jugadores) {
+        this.jugadores = jugadores;
+    }
+    
+    
    
    
    

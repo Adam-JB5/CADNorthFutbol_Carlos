@@ -883,9 +883,9 @@ public class CADNorthFutbol {
         Equipo eq;
 
         String dql = "SELECT N.*, E.NOMBRE "
-           + "FROM NF.NOTICIA N "
-           + "INNER JOIN NF.EQUIPO E ON N.ID_EQUIPO = E.ID_EQUIPO "
-           + "ORDER BY N.FECHA_CREACION DESC";
+                + "FROM NF.NOTICIA N "
+                + "INNER JOIN NF.EQUIPO E ON N.ID_EQUIPO = E.ID_EQUIPO "
+                + "ORDER BY N.FECHA_CREACION DESC";
 
         try {
             conectarBD();
@@ -933,8 +933,8 @@ public class CADNorthFutbol {
 
         return listaNoticias;
     }
-    
-    public Integer insertarNoticia(Noticia noticia) throws ExcepcionNF{
+
+    public Integer insertarNoticia(Noticia noticia) throws ExcepcionNF {
         int registrosAfectados = 0;
 
         String dml = "INSERT INTO noticia (id_noticia, id_equipo, titulo, subtitulo, imagen, contenido, fecha_creacion) VALUES (SEQ_NOTICIA.nextval, ?, ?, ?, ?, ?, SYSDATE)";
@@ -972,5 +972,59 @@ public class CADNorthFutbol {
             throw e;
         }
         return registrosAfectados;
+    }
+
+    public ArrayList<Jugador> leerJugadoresPorEquipo(int idEquipo) throws ExcepcionNF {
+        ArrayList<Jugador> listaJugadores = new ArrayList<>();
+        Jugador j;
+        Equipo eq;
+
+        String dql = "SELECT J.*, E.NOMBRE AS NOMBRE_EQUIPO "
+           + "FROM NF.JUGADOR J "
+           + "INNER JOIN NF.EQUIPO E ON J.ID_EQUIPO = E.ID_EQUIPO "
+           + "WHERE J.ID_EQUIPO = ? "
+           + "ORDER BY J.DORSAL ASC";
+
+        try {
+            conectarBD();
+            PreparedStatement sentencia = conexion.prepareStatement(dql);
+            sentencia.setInt(1, idEquipo);
+            ResultSet resultado = sentencia.executeQuery();
+
+            while (resultado.next()) {
+                j = new Jugador();
+
+                j.setIdJugador(resultado.getInt("ID_JUGADOR"));
+                j.setNombre(resultado.getString("NOMBRE"));
+                j.setApellido(resultado.getString("APELLIDO"));
+                j.setPosicion(resultado.getString("POSICION"));
+                j.setFechaNacimiento(resultado.getDate("FECHA_NACIMIENTO"));
+                j.setPaisOrigen(resultado.getString("PAIS_ORIGEN"));
+                j.setDorsal(resultado.getInt("DORSAL"));
+
+                eq = new Equipo();
+                eq.setIdEquipo(resultado.getInt("ID_EQUIPO"));
+                eq.setNombre(resultado.getString("NOMBRE"));
+                j.setEquipo(eq);
+
+                listaJugadores.add(j);
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            e.setMensajeErrorUsuario("Error al cargar los jugadores. Inténtelo más tarde.");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+
+            throw e;
+        }
+
+        return listaJugadores;
     }
 }

@@ -29,7 +29,8 @@ public class PeticionJugador implements Serializable{
         READ_ALL,   // Lee todos los jugador
         UPDATE,     // Modifica un jugador
         DELETE,     //
-        PING        //
+        PING,       //
+        READ_BY_EQUIPO,
     }
     
     // 3. ¿QUÉ QUIERES HACER?
@@ -62,12 +63,6 @@ public class PeticionJugador implements Serializable{
     public PeticionJugador(TipoOperacion tipoOperacion, int idJugador, Jugador jugador) {
         this.tipoOperacion = tipoOperacion;
         this.idJugador = idJugador;
-        this.jugador = jugador;
-    }
-    
-    // Constructor para Login/Register
-    public PeticionJugador(TipoOperacion tipoOperacion, Jugador jugador) {
-        this.tipoOperacion = tipoOperacion;
         this.jugador = jugador;
     }
     

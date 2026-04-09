@@ -135,7 +135,7 @@ class HiloCliente extends Thread {
         oos.flush();
         System.out.println("DEBUG: Respuesta de noticia enviada a Android");
     }
-    
+
     private void manejarEquipos(PeticionEquipo peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
         System.out.println("DEBUG: Entrando en manejarEquipos... Operación: " + peticion.getTipoOperacion());
         RespuestaEquipo respuesta = new RespuestaEquipo();
@@ -166,6 +166,13 @@ class HiloCliente extends Thread {
                     respuesta.setEquipos(lista);
                     respuesta.setExito(lista != null);
                     respuesta.setMensaje("Lista de noticias recuperada.");
+                    break;
+
+                case READ:
+                    List<Jugador> jugadores = cad.leerJugadoresPorEquipo(peticion.getIdEquipo());
+                    respuesta.setJugadores(jugadores);
+                    respuesta.setExito(jugadores != null);
+                    respuesta.setMensaje("Jugadores del equipo recuperados.");
                     break;
 
                 default:
@@ -324,7 +331,7 @@ class HiloCliente extends Thread {
         oos.writeObject(respuesta);
         oos.flush();
     }
-    
+
     private void manejarJugadores(PeticionJugador peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
         System.out.println("DEBUG: Entrando en manejarJugadores... Operación: " + peticion.getTipoOperacion());
         RespuestaJugador respuesta = new RespuestaJugador();
@@ -354,12 +361,12 @@ class HiloCliente extends Thread {
                     ArrayList<Jugador> lista = cad.leerJugadores();
                     respuesta.setJugadores(lista);
                     respuesta.setExito(lista != null);
-                    respuesta.setMensaje("Lista de noticias recuperada.");
+                    respuesta.setMensaje("Lista de jugadores recuperada.");
                     break;
 
                 default:
                     respuesta.setExito(false);
-                    respuesta.setMensaje("Operación de noticia no soportada.");
+                    respuesta.setMensaje("Operación de jugador no soportada.");
                     break;
             }
         } catch (Exception e) {
