@@ -1027,4 +1027,45 @@ public class CADNorthFutbol {
 
         return listaJugadores;
     }
+    
+    public ArrayList<Equipo> leerEquiposPorGrupo(char grupo) throws ExcepcionNF {
+        ArrayList<Equipo> equipos = new ArrayList<>();
+        
+        String dql = "SELECT * FROM equipo WHERE grupo = ?";
+        
+        try {
+            conectarBD();
+            // Usar PreparedStatement es más seguro y eficiente para filtros
+            PreparedStatement sentencia = conexion.prepareStatement(dql);
+            sentencia.setString(1, String.valueOf(grupo));
+
+            ResultSet resultado = sentencia.executeQuery();
+
+            while (resultado.next()) {
+            Equipo eq = new Equipo();
+            eq.setIdEquipo(resultado.getInt("ID_EQUIPO")); 
+            eq.setNombre(resultado.getString("NOMBRE"));
+            eq.setCiudad(resultado.getString("CIUDAD"));
+            eq.setEntrenador(resultado.getString("ENTRENADOR"));
+            eq.setGrupo(resultado.getString("GRUPO"));
+            
+            
+            equipos.add(eq);
+        }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+        
+        return equipos;
+    }
 }

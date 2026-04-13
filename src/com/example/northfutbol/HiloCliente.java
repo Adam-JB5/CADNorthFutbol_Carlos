@@ -161,11 +161,11 @@ class HiloCliente extends Thread {
                     }
                     break;
 
-                case READ_ALL: // El caso que tenías antes
+                case READ_ALL:
                     ArrayList<Equipo> lista = cad.leerEquipos();
                     respuesta.setEquipos(lista);
                     respuesta.setExito(lista != null);
-                    respuesta.setMensaje("Lista de noticias recuperada.");
+                    respuesta.setMensaje("Lista de equipos recuperada.");
                     break;
 
                 case READ:
@@ -174,10 +174,17 @@ class HiloCliente extends Thread {
                     respuesta.setExito(jugadores != null);
                     respuesta.setMensaje("Jugadores del equipo recuperados.");
                     break;
+                    
+                case READ_BY_GROUP:
+                    ArrayList<Equipo> listaPorGrupo = cad.leerEquiposPorGrupo(peticion.getGrupo());
+                    respuesta.setEquipos(listaPorGrupo);
+                    respuesta.setExito(listaPorGrupo != null);
+                    respuesta.setMensaje("Lista de equipos por grupo recuperada.");
+                    break;
 
                 default:
                     respuesta.setExito(false);
-                    respuesta.setMensaje("Operación de noticia no soportada.");
+                    respuesta.setMensaje("Operación de equipo no soportada.");
                     break;
             }
         } catch (Exception e) {
