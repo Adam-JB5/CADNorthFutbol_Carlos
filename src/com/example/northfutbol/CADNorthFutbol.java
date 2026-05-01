@@ -18,6 +18,8 @@ import pojosnorthfutbol.ExcepcionNF;
 import pojosnorthfutbol.Jugador;
 import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
+import pojosnorthfutbol.Partido;
+import pojosnorthfutbol.Jornada;
 
 /**
  *
@@ -28,9 +30,9 @@ public class CADNorthFutbol {
     private Connection conexion;
 
     //private String HOST = "jdbc:oracle:thin:@172.16.212.1:1521:test";
-    //private String HOST = "jdbc:oracle:thin:@192.168.1.209:1521:test";
+    private String HOST = "jdbc:oracle:thin:@192.168.1.209:1521:test";
     //private String HOST = "jdbc:oracle:thin:@172.16.209.1:1521:test";
-    private String HOST = "jdbc:oracle:thin:@10.177.104.210:1521:test";
+    //private String HOST = "jdbc:oracle:thin:@10.177.104.210:1521:test";
     private String USERBD = "NF";
     private String PASSWORD = "kk";
 
@@ -980,10 +982,10 @@ public class CADNorthFutbol {
         Equipo eq;
 
         String dql = "SELECT J.*, E.NOMBRE AS NOMBRE_EQUIPO "
-           + "FROM NF.JUGADOR J "
-           + "INNER JOIN NF.EQUIPO E ON J.ID_EQUIPO = E.ID_EQUIPO "
-           + "WHERE J.ID_EQUIPO = ? "
-           + "ORDER BY J.DORSAL ASC";
+                + "FROM NF.JUGADOR J "
+                + "INNER JOIN NF.EQUIPO E ON J.ID_EQUIPO = E.ID_EQUIPO "
+                + "WHERE J.ID_EQUIPO = ? "
+                + "ORDER BY J.DORSAL ASC";
 
         try {
             conectarBD();
@@ -1027,12 +1029,12 @@ public class CADNorthFutbol {
 
         return listaJugadores;
     }
-    
+
     public ArrayList<Equipo> leerEquiposPorGrupo(char grupo) throws ExcepcionNF {
         ArrayList<Equipo> equipos = new ArrayList<>();
-        
+
         String dql = "SELECT * FROM equipo WHERE grupo = ?";
-        
+
         try {
             conectarBD();
             // Usar PreparedStatement es más seguro y eficiente para filtros
@@ -1042,16 +1044,15 @@ public class CADNorthFutbol {
             ResultSet resultado = sentencia.executeQuery();
 
             while (resultado.next()) {
-            Equipo eq = new Equipo();
-            eq.setIdEquipo(resultado.getInt("ID_EQUIPO")); 
-            eq.setNombre(resultado.getString("NOMBRE"));
-            eq.setCiudad(resultado.getString("CIUDAD"));
-            eq.setEntrenador(resultado.getString("ENTRENADOR"));
-            eq.setGrupo(resultado.getString("GRUPO"));
-            
-            
-            equipos.add(eq);
-        }
+                Equipo eq = new Equipo();
+                eq.setIdEquipo(resultado.getInt("ID_EQUIPO"));
+                eq.setNombre(resultado.getString("NOMBRE"));
+                eq.setCiudad(resultado.getString("CIUDAD"));
+                eq.setEntrenador(resultado.getString("ENTRENADOR"));
+                eq.setGrupo(resultado.getString("GRUPO"));
+
+                equipos.add(eq);
+            }
 
             resultado.close();
             sentencia.close();
@@ -1065,7 +1066,241 @@ public class CADNorthFutbol {
             e.setSentenciaSQL(dql);
             throw e;
         }
-        
+
         return equipos;
+    }
+
+    /**
+     * Este método hace una consulta recogiendo datos de todos los partidos de
+     * la base de datos
+     *
+     * @return Lista (ArrayList) de partidos leídos
+     * @throws ExcepcionNF
+     * @author Adam Janah
+     * @version 1.0
+     * @since 01/05/2026 DD/MM/AAAA
+     */
+    public ArrayList<Partido> leerPartidos() throws ExcepcionNF {
+        ArrayList<Partido> listaPartidos = new ArrayList<>();
+        Partido p;
+        String dql = "SELECT p.*, "
+                + "el.nombre AS nombre_local, el.ciudad AS ciudad_local, el.entrenador AS entrenador_local, el.grupo AS grupo_local, "
+                + "ev.nombre AS nombre_visitante, ev.ciudad AS ciudad_visitante, ev.entrenador AS entrenador_visitante, ev.grupo AS grupo_visitante "
+                + "FROM partido p "
+                + "JOIN equipo el ON p.id_local = el.id_equipo "
+                + "JOIN equipo ev ON p.id_visitante = ev.id_equipo";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+
+            ResultSet resultado = sentencia.executeQuery(dql);
+            while (resultado.next()) {
+                p = new Partido();
+                p.setIdPartido(resultado.getInt("ID_PARTIDO"));
+
+                Equipo local = new Equipo();
+                local.setIdEquipo(resultado.getInt("ID_LOCAL"));
+                local.setNombre(resultado.getString("NOMBRE_LOCAL"));
+                local.setCiudad(resultado.getString("CIUDAD_LOCAL"));
+                local.setEntrenador(resultado.getString("ENTRENADOR_LOCAL"));
+                local.setGrupo(resultado.getString("GRUPO_LOCAL"));
+                p.setLocal(local);
+
+                Equipo visitante = new Equipo();
+                visitante.setIdEquipo(resultado.getInt("ID_VISITANTE"));
+                visitante.setNombre(resultado.getString("NOMBRE_VISITANTE"));
+                visitante.setCiudad(resultado.getString("CIUDAD_VISITANTE"));
+                visitante.setEntrenador(resultado.getString("ENTRENADOR_VISITANTE"));
+                visitante.setGrupo(resultado.getString("GRUPO_VISITANTE"));
+                p.setVisitante(visitante);
+
+                Jornada jornada = new Jornada();
+                jornada.setIdJornada(resultado.getInt("ID_JORNADA"));
+                p.setJornada(jornada);
+
+                p.setFecha(resultado.getDate("FECHA"));
+                p.setEstadio(resultado.getString("ESTADIO"));
+                p.setEstado(resultado.getString("ESTADO"));
+                p.setGolesLocal(resultado.getInt("GOLES_LOCAL"));
+                p.setGolesVisitante(resultado.getInt("GOLES_VISITANTE"));
+
+                listaPartidos.add(p);
+            }
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+        return listaPartidos;
+    }
+
+    /**
+     * Este método elimina un registro de la tabla Partido según un
+     * identificador específico
+     *
+     * @param idPartido Identificador del partido a eliminar
+     * @return Cantidad de registros eliminados
+     * @throws ExcepcionNF
+     * @author Adam Janah
+     * @version 1.0
+     * @since 01/05/2026 DD/MM/AAAA
+     */
+    public Integer eliminarPartido(Integer idPartido) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            dml = "DELETE partido WHERE id_partido = " + idPartido;
+            registrosAfectados = sentencia.executeUpdate(dml);
+
+            sentencia.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 2292:
+                    e.setMensajeErrorUsuario("No se puede eliminar este partido ya que tiene registros asociados");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+                    break;
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            throw e;
+        }
+        return registrosAfectados;
+    }
+
+    /**
+     * Este método modifica un registro existente en la tabla Partido de la base
+     * de datos
+     *
+     * @param idPartido Identificador del partido que se desea modificar
+     * @param partido Objeto que contiene la nueva información del partido,
+     * incluyendo los equipos y la jornada asociados
+     * @return Cantidad de registros afectados
+     * @throws ExcepcionNF
+     * @author Adam Janah
+     * @version 1.0
+     * @since 01/05/2026 DD/MM/AAAA
+     */
+    public Integer modificarPartido(Integer idPartido, Partido partido) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String sql = "call modificar_partido(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            conectarBD();
+
+            CallableStatement sentenciaLlamable = conexion.prepareCall(sql);
+
+            sentenciaLlamable.setObject(1, partido.getLocal().getIdEquipo(), java.sql.Types.INTEGER);
+            sentenciaLlamable.setObject(2, partido.getVisitante().getIdEquipo(), java.sql.Types.INTEGER);
+            sentenciaLlamable.setObject(3, partido.getJornada().getIdJornada(), java.sql.Types.INTEGER);
+            sentenciaLlamable.setObject(4, new java.sql.Date(partido.getFecha().getTime()));
+            sentenciaLlamable.setString(5, partido.getEstadio());
+            sentenciaLlamable.setString(6, partido.getEstado());
+            sentenciaLlamable.setObject(7, partido.getGolesLocal(), java.sql.Types.INTEGER);
+            sentenciaLlamable.setObject(8, partido.getGolesVisitante(), java.sql.Types.INTEGER);
+            sentenciaLlamable.setObject(9, idPartido, java.sql.Types.INTEGER);
+
+            registrosAfectados = sentenciaLlamable.executeUpdate();
+
+            sentenciaLlamable.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 1407:
+                    e.setMensajeErrorUsuario("Todos los campos obligatorios deben estar rellenos");
+                    break;
+                case 2290:
+                    e.setMensajeErrorUsuario("El estado del partido solo puede ser: N, C o F");
+                    break;
+                case 2291:
+                    e.setMensajeErrorUsuario("El equipo local, visitante o jornada indicados no existen");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+                    break;
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(sql);
+            throw e;
+        }
+        return registrosAfectados;
+    }
+
+    /**
+     * Este método inserta un registro en la tabla Partido de la base de datos
+     *
+     * @param partido Objeto que contiene toda la información del partido a
+     * insertar, incluyendo los equipos y la jornada asociados
+     * @return Cantidad de registros insertados
+     * @throws ExcepcionNF
+     * @author Adam Janah
+     * @version 1.0
+     * @since 01/05/2026 DD/MM/AAAA
+     */
+    public Integer insertarPartido(Partido partido) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "INSERT INTO partido (id_partido, id_local, id_visitante, id_jornada, fecha, estadio, estado, goles_local, goles_visitante) "
+                + "VALUES (SEQ_PARTIDO.nextval, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try {
+            conectarBD();
+            PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+
+            sentenciaPreparada.setObject(1, partido.getLocal().getIdEquipo(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setObject(2, partido.getVisitante().getIdEquipo(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setObject(3, partido.getJornada().getIdJornada(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setObject(4, new java.sql.Date(partido.getFecha().getTime()));
+            sentenciaPreparada.setString(5, partido.getEstadio());
+            sentenciaPreparada.setString(6, partido.getEstado());
+            sentenciaPreparada.setObject(7, partido.getGolesLocal(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setObject(8, partido.getGolesVisitante(), java.sql.Types.INTEGER);
+
+            registrosAfectados = sentenciaPreparada.executeUpdate();
+
+            sentenciaPreparada.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 1400:
+                    e.setMensajeErrorUsuario("Todos los campos obligatorios deben estar rellenos");
+                    break;
+                case 2290:
+                    e.setMensajeErrorUsuario("El estado del partido solo puede ser: N, C o F");
+                    break;
+                case 2291:
+                    e.setMensajeErrorUsuario("El equipo local, visitante o jornada indicados no existen");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+                    break;
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            throw e;
+        }
+        return registrosAfectados;
     }
 }

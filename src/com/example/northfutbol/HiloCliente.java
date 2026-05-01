@@ -17,6 +17,7 @@ import pojosnorthfutbol.ExcepcionNF;
 import pojosnorthfutbol.Jugador;
 import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
+import pojosnorthfutbol.Partido;
 
 /**
  * HILO CLIENTE ===================== Esta clase representa al recepcionista que
@@ -68,6 +69,9 @@ class HiloCliente extends Thread {
             } else if (objeto instanceof PeticionJugador) {
                 System.out.println("DEBUG: Es PeticionJugador");
                 manejarJugadores((PeticionJugador) objeto, oos, cad);
+            } else if (objeto instanceof PeticionPartido) {
+                System.out.println("DEBUG: Es PeticionPartido");
+                manejarPartidos((PeticionPartido) objeto, oos, cad);
             } else {
                 System.out.println("DEBUG: El objeto NO es de ningun tipo conocido");
             }
@@ -386,5 +390,37 @@ class HiloCliente extends Thread {
         oos.writeObject(respuesta);
         oos.flush();
         System.out.println("DEBUG: Respuesta de jugador enviada a Android");
+    }
+
+    private void manejarPartidos(PeticionPartido peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
+        System.out.println("DEBUG: Entrando en manejarPartidos... Operación: " + peticion.getTipoOperacion());
+        RespuestaPartido respuesta = new RespuestaPartido();
+
+        try {
+            switch (peticion.getTipoOperacion()) {
+                
+
+                case READ_ALL: // El caso que tenías antes
+                    ArrayList<Partido> lista = cad.leerPartidos();
+                    respuesta.setPartidos(lista);
+                    respuesta.setExito(lista != null);
+                    respuesta.setMensaje("Lista de partidos recuperada.");
+                    break;
+
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación de partido no soportada.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error en manejarPartidos: " + e.getMessage());
+            e.printStackTrace();
+            respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
+        }
+
+        oos.writeObject(respuesta);
+        oos.flush();
+        System.out.println("DEBUG: Respuesta de partido enviada a Android");
     }
 }
