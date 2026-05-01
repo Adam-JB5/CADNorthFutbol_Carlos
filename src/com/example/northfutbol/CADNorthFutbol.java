@@ -1303,4 +1303,75 @@ public class CADNorthFutbol {
         }
         return registrosAfectados;
     }
+    
+    /**
+ * Este método hace una consulta recogiendo los datos de un partido concreto
+ * de la base de datos
+ *
+ * @param idPartido Identificador del partido a leer
+ * @return Objeto Partido con todos sus datos, o null si no existe
+ * @throws ExcepcionNF
+ * @author Adam Janah
+ * @version 1.0
+ * @since 01/05/2026 DD/MM/AAAA
+ */
+public Partido leerPartido(Integer idPartido) throws ExcepcionNF {
+    Partido p = null;
+    String dql = "SELECT p.*, "
+               + "el.nombre AS nombre_local, el.ciudad AS ciudad_local, el.entrenador AS entrenador_local, el.grupo AS grupo_local, "
+               + "ev.nombre AS nombre_visitante, ev.ciudad AS ciudad_visitante, ev.entrenador AS entrenador_visitante, ev.grupo AS grupo_visitante "
+               + "FROM partido p "
+               + "JOIN equipo el ON p.id_local = el.id_equipo "
+               + "JOIN equipo ev ON p.id_visitante = ev.id_equipo "
+               + "WHERE p.id_partido = " + idPartido;
+    try {
+        conectarBD();
+        Statement sentencia = conexion.createStatement();
+        ResultSet resultado = sentencia.executeQuery(dql);
+
+        if (resultado.next()) {
+            p = new Partido();
+            p.setIdPartido(resultado.getInt("ID_PARTIDO"));
+
+            Equipo local = new Equipo();
+            local.setIdEquipo(resultado.getInt("ID_LOCAL"));
+            local.setNombre(resultado.getString("NOMBRE_LOCAL"));
+            local.setCiudad(resultado.getString("CIUDAD_LOCAL"));
+            local.setEntrenador(resultado.getString("ENTRENADOR_LOCAL"));
+            local.setGrupo(resultado.getString("GRUPO_LOCAL"));
+            p.setLocal(local);
+
+            Equipo visitante = new Equipo();
+            visitante.setIdEquipo(resultado.getInt("ID_VISITANTE"));
+            visitante.setNombre(resultado.getString("NOMBRE_VISITANTE"));
+            visitante.setCiudad(resultado.getString("CIUDAD_VISITANTE"));
+            visitante.setEntrenador(resultado.getString("ENTRENADOR_VISITANTE"));
+            visitante.setGrupo(resultado.getString("GRUPO_VISITANTE"));
+            p.setVisitante(visitante);
+
+            Jornada jornada = new Jornada();
+            jornada.setIdJornada(resultado.getInt("ID_JORNADA"));
+            p.setJornada(jornada);
+
+            p.setFecha(resultado.getDate("FECHA"));
+            p.setEstadio(resultado.getString("ESTADIO"));
+            p.setEstado(resultado.getString("ESTADO"));
+            p.setGolesLocal(resultado.getInt("GOLES_LOCAL"));
+            p.setGolesVisitante(resultado.getInt("GOLES_VISITANTE"));
+        }
+
+        resultado.close();
+        sentencia.close();
+        conexion.close();
+
+    } catch (SQLException ex) {
+        ExcepcionNF e = new ExcepcionNF();
+        e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+        e.setCodigoErrorBD(ex.getErrorCode());
+        e.setMensajeErrorBD(ex.getMessage());
+        e.setSentenciaSQL(dql);
+        throw e;
+    }
+    return p;
+}
 }

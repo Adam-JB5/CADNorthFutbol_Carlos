@@ -178,7 +178,7 @@ class HiloCliente extends Thread {
                     respuesta.setExito(jugadores != null);
                     respuesta.setMensaje("Jugadores del equipo recuperados.");
                     break;
-                    
+
                 case READ_BY_GROUP:
                     ArrayList<Equipo> listaPorGrupo = cad.leerEquiposPorGrupo(peticion.getGrupo());
                     respuesta.setEquipos(listaPorGrupo);
@@ -398,13 +398,19 @@ class HiloCliente extends Thread {
 
         try {
             switch (peticion.getTipoOperacion()) {
-                
 
                 case READ_ALL: // El caso que tenías antes
                     ArrayList<Partido> lista = cad.leerPartidos();
                     respuesta.setPartidos(lista);
                     respuesta.setExito(lista != null);
                     respuesta.setMensaje("Lista de partidos recuperada.");
+                    break;
+
+                case READ:
+                    Partido partido = cad.leerPartido(peticion.getIdPartido());
+                    respuesta.setPartido(partido);
+                    respuesta.setExito(partido != null);
+                    respuesta.setMensaje(partido != null ? "Partido encontrado." : "No se encontró el partido.");
                     break;
 
                 default:
