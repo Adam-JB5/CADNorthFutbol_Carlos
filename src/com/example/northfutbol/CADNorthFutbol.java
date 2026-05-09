@@ -832,7 +832,7 @@ public class CADNorthFutbol {
 
     public Integer modificarNombreEmailUsuario(Integer idUsuario, Usuario usuario) throws ExcepcionNF {
         int registrosAfectados = 0;
-        String dml = "UPDATE usuario SET nombre = ?, email = ? WHERE id_usuario = ?";
+        String dml = "UPDATE usuario SET nombre = ?, email = ?, foto_perfil = ? WHERE id_usuario = ?";
 
         try {
             conectarBD();
@@ -841,7 +841,8 @@ public class CADNorthFutbol {
 
             ps.setString(1, usuario.getNombre());
             ps.setString(2, usuario.getEmail());
-            ps.setObject(3, idUsuario, java.sql.Types.INTEGER);
+            ps.setString(3, usuario.getFotoPerfil());
+            ps.setObject(4, idUsuario, java.sql.Types.INTEGER);
 
             registrosAfectados = ps.executeUpdate();
 
