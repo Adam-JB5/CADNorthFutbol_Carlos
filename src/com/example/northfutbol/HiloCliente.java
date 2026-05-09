@@ -398,7 +398,7 @@ class HiloCliente extends Thread {
 
         try {
             switch (peticion.getTipoOperacion()) {
-
+                
                 case READ_ALL: // El caso que tenías antes
                     ArrayList<Partido> lista = cad.leerPartidos();
                     respuesta.setPartidos(lista);
@@ -407,10 +407,17 @@ class HiloCliente extends Thread {
                     break;
 
                 case READ:
-                    Partido partido = cad.leerPartido(peticion.getIdPartido());
+                    Partido partido = cad.leerPartido(peticion.getId());
                     respuesta.setPartido(partido);
                     respuesta.setExito(partido != null);
                     respuesta.setMensaje(partido != null ? "Partido encontrado." : "No se encontró el partido.");
+                    break;
+                    
+                case READ_BY_FOLLOWED:
+                    ArrayList<Partido> listaSeguidos = cad.leerPartidosSeguidos(peticion.getId());
+                    respuesta.setPartidos(listaSeguidos);
+                    respuesta.setExito(listaSeguidos != null);
+                    respuesta.setMensaje("Lista de partidos seguidos recuperada.");
                     break;
 
                 default:

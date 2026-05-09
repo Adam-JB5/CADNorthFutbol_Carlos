@@ -28,6 +28,7 @@ public class PeticionPartido implements Serializable{
         READ,       // Lee un partido
         READ_ALL,   // Lee todos los partido
         UPDATE,     // Modifica un partido
+        READ_BY_FOLLOWED,
         LOGIN,
         REGISTER,
         UPDATE_USER_NAME_EMAIL,
@@ -41,8 +42,8 @@ public class PeticionPartido implements Serializable{
     // 4. ¿CON QUÉ DATOS?
     private Partido partido;
     
-    // 5. ¿CON QUÉ ID? (Read/Delete)
-    private int idPartido;
+    // 5. ¿CON QUÉ ID? (Read/Delete) (Partido/Usuario)
+    private int id;
     
     // 6. CONSTRUCTORES
     // 6.1. Vacío
@@ -56,15 +57,15 @@ public class PeticionPartido implements Serializable{
     }
     
     // 6.3. Contructor para Read/Delete
-    public PeticionPartido(TipoOperacion tipoOperacion, int idPartido) {
+    public PeticionPartido(TipoOperacion tipoOperacion, int idPartidoUsuario) {
         this.tipoOperacion = tipoOperacion;
-        this.idPartido = idPartido;
+        this.id = idPartidoUsuario;
     }
     
     // 6.4. Contructor para Create/Update
     public PeticionPartido(TipoOperacion tipoOperacion, int idPartido, Partido partido) {
         this.tipoOperacion = tipoOperacion;
-        this.idPartido = idPartido;
+        this.id = idPartido;
         this.partido = partido;
     }
     
@@ -73,7 +74,7 @@ public class PeticionPartido implements Serializable{
         this.tipoOperacion = tipoOperacion;
         this.partido = partido;
     }
-    
+
     // 7. Getters y Setters
 
     public TipoOperacion getTipoOperacion() {
@@ -92,12 +93,12 @@ public class PeticionPartido implements Serializable{
         this.partido = partido;
     }
 
-    public int getIdPartido() {
-        return idPartido;
+    public int getId() {
+        return id;
     }
 
-    public void setIdPartido(int idPartido) {
-        this.idPartido = idPartido;
+    public void setId(int idPartido) {
+        this.id = idPartido;
     }
     
     
