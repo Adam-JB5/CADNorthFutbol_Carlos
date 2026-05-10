@@ -20,6 +20,7 @@ import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
 import pojosnorthfutbol.Partido;
 import pojosnorthfutbol.Jornada;
+import pojosnorthfutbol.Comentario;
 
 /**
  *
@@ -1495,5 +1496,210 @@ public class CADNorthFutbol {
             throw e;
         }
         return listaPartidos;
+    }
+
+    public Integer eliminarComentario(Integer idComentario) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            dml = "DELETE comentario WHERE id_comentario = " + idComentario;
+            registrosAfectados = sentencia.executeUpdate(dml);
+
+            sentencia.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 2292:
+                    e.setMensajeErrorUsuario("No se puede eliminar este comentario ya que tiene registros asociados");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+                    break;
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            throw e;
+        }
+        return registrosAfectados;
+    }
+
+    /**
+     * Este método modifica un registro existente en la tabla Comentario de la
+     * base de datos
+     *
+     * @param idComentario Identificador del comentario que se desea modificar
+     * @param comentario Objeto que contiene la nueva información del
+     * comentario, incluyendo la noticia y el usuario asociados
+     * @return Cantidad de registros afectados
+     * @throws ExcepcionNF
+     * @author Adam Janah
+     * @version 1.0
+     * @since 10/05/2026 DD/MM/AAAA
+     */
+    public Integer modificarComentario(Integer idComentario, Comentario comentario) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "UPDATE comentario SET "
+                + "id_noticia = ?, "
+                + "id_usuario = ?, "
+                + "contenido = ?, "
+                + "fecha_creacion = ? "
+                + "WHERE id_comentario = ?";
+        try {
+            conectarBD();
+            PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+
+            sentenciaPreparada.setObject(1, comentario.getNoticia().getIdNoticia(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setObject(2, comentario.getUsuario().getIdUsuario(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setString(3, comentario.getContenido());
+            sentenciaPreparada.setObject(4, new java.sql.Date(comentario.getFechaCreacion().getTime()));
+            sentenciaPreparada.setObject(5, idComentario, java.sql.Types.INTEGER);
+
+            registrosAfectados = sentenciaPreparada.executeUpdate();
+
+            sentenciaPreparada.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 1407:
+                    e.setMensajeErrorUsuario("Todos los campos obligatorios deben estar rellenos");
+                    break;
+                case 2291:
+                    e.setMensajeErrorUsuario("La noticia o el usuario indicados no existen");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+                    break;
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            throw e;
+        }
+        return registrosAfectados;
+    }
+
+    /**
+     * Este método inserta un registro en la tabla Comentario de la base de
+     * datos
+     *
+     * @param comentario Objeto que contiene toda la información del comentario
+     * a insertar, incluyendo la noticia y el usuario asociados
+     * @return Cantidad de registros insertados
+     * @throws ExcepcionNF
+     * @author Adam Janah
+     * @version 1.0
+     * @since 10/05/2026 DD/MM/AAAA
+     */
+    public Integer insertarComentario(Comentario comentario) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "INSERT INTO comentario (id_comentario, id_noticia, id_usuario, contenido, fecha_creacion) "
+                + "VALUES (SEQ_COMENTARIO.nextval, ?, ?, ?, ?)";
+
+        try {
+            conectarBD();
+            PreparedStatement sentenciaPreparada = conexion.prepareStatement(dml);
+
+            sentenciaPreparada.setObject(1, comentario.getNoticia().getIdNoticia(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setObject(2, comentario.getUsuario().getIdUsuario(), java.sql.Types.INTEGER);
+            sentenciaPreparada.setString(3, comentario.getContenido());
+            sentenciaPreparada.setObject(4, new java.sql.Date(comentario.getFechaCreacion().getTime()));
+
+            registrosAfectados = sentenciaPreparada.executeUpdate();
+
+            sentenciaPreparada.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+
+            switch (ex.getErrorCode()) {
+                case 1400:
+                    e.setMensajeErrorUsuario("Todos los campos obligatorios deben estar rellenos");
+                    break;
+                case 2291:
+                    e.setMensajeErrorUsuario("La noticia o el usuario indicados no existen");
+                    break;
+                default:
+                    e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+                    break;
+            }
+
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            throw e;
+        }
+        return registrosAfectados;
+    }
+
+    /**
+     * Este método hace una consulta recogiendo todos los comentarios asociados
+     * a una noticia concreta de la base de datos
+     *
+     * @param idNoticia Identificador de la noticia cuyos comentarios se desean
+     * obtener
+     * @return Lista de objetos Comentario con todos sus datos, o lista vacía si
+     * no hay ninguno
+     * @throws ExcepcionNF
+     * @author Adam Janah
+     * @version 1.0
+     * @since 10/05/2026 DD/MM/AAAA
+     */
+    public ArrayList<Comentario> leerComentariosPorNoticia(Integer idNoticia) throws ExcepcionNF {
+        ArrayList<Comentario> comentarios = new ArrayList<>();
+        String dql = "SELECT c.*, "
+                + "u.nombre AS nombre_usuario, u.email AS email_usuario, u.rol AS rol_usuario "
+                + "FROM comentario c "
+                + "JOIN usuario u ON c.id_usuario = u.id_usuario "
+                + "WHERE c.id_noticia = " + idNoticia + " "
+                + "ORDER BY c.fecha_creacion ASC";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            ResultSet resultado = sentencia.executeQuery(dql);
+
+            while (resultado.next()) {
+                Comentario c = new Comentario();
+                c.setIdComentario(resultado.getInt("ID_COMENTARIO"));
+
+                Noticia noticia = new Noticia();
+                noticia.setIdNoticia(idNoticia);
+                c.setNoticia(noticia);
+
+                Usuario usuario = new Usuario();
+                usuario.setIdUsuario(resultado.getInt("ID_USUARIO"));
+                usuario.setNombre(resultado.getString("NOMBRE_USUARIO"));
+                usuario.setEmail(resultado.getString("EMAIL_USUARIO"));
+                usuario.setRol(resultado.getString("ROL_USUARIO"));
+                c.setUsuario(usuario);
+
+                c.setContenido(resultado.getString("CONTENIDO"));
+                c.setFechaCreacion(resultado.getDate("FECHA_CREACION"));
+
+                comentarios.add(c);
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+        return comentarios;
     }
 }

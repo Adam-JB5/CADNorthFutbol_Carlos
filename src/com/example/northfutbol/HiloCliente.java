@@ -18,6 +18,7 @@ import pojosnorthfutbol.Jugador;
 import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
 import pojosnorthfutbol.Partido;
+import pojosnorthfutbol.Comentario;
 
 /**
  * HILO CLIENTE ===================== Esta clase representa al recepcionista que
@@ -72,6 +73,9 @@ class HiloCliente extends Thread {
             } else if (objeto instanceof PeticionPartido) {
                 System.out.println("DEBUG: Es PeticionPartido");
                 manejarPartidos((PeticionPartido) objeto, oos, cad);
+            } else if (objeto instanceof PeticionComentario) {
+                System.out.println("DEBUG: Es PeticionComentario");
+                manejarComentarios((PeticionComentario) objeto, oos, cad);
             } else {
                 System.out.println("DEBUG: El objeto NO es de ningun tipo conocido");
             }
@@ -122,7 +126,7 @@ class HiloCliente extends Thread {
                     respuesta.setExito(lista != null);
                     respuesta.setMensaje("Lista de noticias recuperada.");
                     break;
-                    
+
                 case READ:
                     Noticia noticia = cad.leerNoticia(peticion.getIdNoticia());
                     respuesta.setNoticia(noticia);
@@ -405,7 +409,7 @@ class HiloCliente extends Thread {
 
         try {
             switch (peticion.getTipoOperacion()) {
-                
+
                 case READ_ALL: // El caso que tenías antes
                     ArrayList<Partido> lista = cad.leerPartidos();
                     respuesta.setPartidos(lista);
@@ -419,7 +423,7 @@ class HiloCliente extends Thread {
                     respuesta.setExito(partido != null);
                     respuesta.setMensaje(partido != null ? "Partido encontrado." : "No se encontró el partido.");
                     break;
-                    
+
                 case READ_BY_FOLLOWED:
                     ArrayList<Partido> listaSeguidos = cad.leerPartidosSeguidos(peticion.getId());
                     respuesta.setPartidos(listaSeguidos);
@@ -442,5 +446,52 @@ class HiloCliente extends Thread {
         oos.writeObject(respuesta);
         oos.flush();
         System.out.println("DEBUG: Respuesta de partido enviada a Android");
+    }
+
+    private void manejarComentarios(PeticionComentario peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
+        System.out.println("DEBUG: Entrando en manejarComentarios... Operación: " + peticion.getTipoOperacion());
+        RespuestaComentario respuesta = new RespuestaComentario();
+        try {
+            switch (peticion.getTipoOperacion()) {
+
+                case READ_BY_NOTICIA:
+                    List<Comentario> lista = cad.leerComentariosPorNoticia(peticion.getIdNoticia());
+                    respuesta.setComentarios(lista);
+                    respuesta.setExito(lista != null);
+                    respuesta.setMensaje("Lista de comentarios de la noticia recuperada.");
+                    break;
+
+                case CREATE:
+                    Integer registrosInsertados = cad.insertarComentario(peticion.getComentario());
+                    respuesta.setExito(registrosInsertados > 0);
+                    respuesta.setMensaje(registrosInsertados > 0 ? "Comentario insertado correctamente." : "No se pudo insertar el comentario.");
+                    break;
+
+                case UPDATE:
+                    Integer registrosModificados = cad.modificarComentario(peticion.getIdComentario(), peticion.getComentario());
+                    respuesta.setExito(registrosModificados > 0);
+                    respuesta.setMensaje(registrosModificados > 0 ? "Comentario modificado correctamente." : "No se pudo modificar el comentario.");
+                    break;
+
+                case DELETE:
+                    Integer registrosEliminados = cad.eliminarComentario(peticion.getIdComentario());
+                    respuesta.setExito(registrosEliminados > 0);
+                    respuesta.setMensaje(registrosEliminados > 0 ? "Comentario eliminado correctamente." : "No se pudo eliminar el comentario.");
+                    break;
+
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación de comentario no soportada.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error en manejarComentarios: " + e.getMessage());
+            e.printStackTrace();
+            respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
+        }
+        oos.writeObject(respuesta);
+        oos.flush();
+        System.out.println("DEBUG: Respuesta de comentario enviada a Android");
     }
 }
