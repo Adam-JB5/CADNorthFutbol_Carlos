@@ -76,6 +76,9 @@ class HiloCliente extends Thread {
             } else if (objeto instanceof PeticionComentario) {
                 System.out.println("DEBUG: Es PeticionComentario");
                 manejarComentarios((PeticionComentario) objeto, oos, cad);
+            } else if (objeto instanceof PeticionUsuarioEquiposSeguidos) {
+                System.out.println("DEBUG: Es PeticionUsuarioEquiposSeguidos");
+                manejarUsuarioEquiposSeguidos((PeticionUsuarioEquiposSeguidos) objeto, oos, cad);
             } else {
                 System.out.println("DEBUG: El objeto NO es de ningun tipo conocido");
             }
@@ -493,5 +496,41 @@ class HiloCliente extends Thread {
         oos.writeObject(respuesta);
         oos.flush();
         System.out.println("DEBUG: Respuesta de comentario enviada a Android");
+    }
+
+    private void manejarUsuarioEquiposSeguidos(PeticionUsuarioEquiposSeguidos peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
+        System.out.println("DEBUG: Entrando en manejarUsuarioEquiposSeguidos... Operación: " + peticion.getTipoOperacion());
+        RespuestaUsuarioEquiposSeguidos respuesta = new RespuestaUsuarioEquiposSeguidos();
+        try {
+            switch (peticion.getTipoOperacion()) {
+                case CHECK:
+                    boolean sigue = cad.esSeguidor(peticion.getIdUsuario(), peticion.getIdEquipo());
+                    respuesta.setExito(true);
+                    respuesta.setSiguiendo(sigue);
+                    break;
+                case CREATE:
+                    int insertados = cad.seguirEquipo(peticion.getIdUsuario(), peticion.getIdEquipo());
+                    respuesta.setExito(insertados > 0);
+                    respuesta.setSiguiendo(insertados > 0);
+                    break;
+                case DELETE:
+                    int eliminados = cad.dejarSeguirEquipo(peticion.getIdUsuario(), peticion.getIdEquipo());
+                    respuesta.setExito(eliminados > 0);
+                    respuesta.setSiguiendo(false);
+                    break;
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación de UsuarioEquiposSeguidos no soportada.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error en manejarUsuarioEquiposSeguidos: " + e.getMessage());
+            e.printStackTrace();
+            respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
+        }
+        oos.writeObject(respuesta);
+        oos.flush();
+        System.out.println("DEBUG: Respuesta de UsuarioEquiposSeguidos enviada a Android");
     }
 }

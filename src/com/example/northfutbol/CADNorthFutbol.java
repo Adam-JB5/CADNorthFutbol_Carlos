@@ -1702,4 +1702,68 @@ public class CADNorthFutbol {
         }
         return comentarios;
     }
+
+    public boolean esSeguidor(Integer idUsuario, Integer idEquipo) throws ExcepcionNF {
+        String dql = "SELECT COUNT(*) FROM usuario_equipos_seguidos "
+                + "WHERE id_usuario = " + idUsuario + " AND id_equipo = " + idEquipo;
+        try {
+            conectarBD();
+            Statement s = conexion.createStatement();
+            ResultSet rs = s.executeQuery(dql);
+            rs.next();
+            int count = rs.getInt(1);
+            rs.close();
+            s.close();
+            conexion.close();
+            return count > 0;
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+    }
+
+    public int seguirEquipo(Integer idUsuario, Integer idEquipo) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "INSERT INTO usuario_equipos_seguidos VALUES (" + idUsuario + ", " + idEquipo + ")";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            registrosAfectados = sentencia.executeUpdate(dml);
+            sentencia.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            throw e;
+        }
+        return registrosAfectados;
+    }
+
+    public int dejarSeguirEquipo(Integer idUsuario, Integer idEquipo) throws ExcepcionNF {
+        int registrosAfectados = 0;
+        String dml = "DELETE FROM usuario_equipos_seguidos "
+                + "WHERE id_usuario = " + idUsuario + " AND id_equipo = " + idEquipo;
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            registrosAfectados = sentencia.executeUpdate(dml);
+            sentencia.close();
+            conexion.close();
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dml);
+            throw e;
+        }
+        return registrosAfectados;
+    }
 }
