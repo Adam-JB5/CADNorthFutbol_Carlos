@@ -1766,4 +1766,40 @@ public class CADNorthFutbol {
         }
         return registrosAfectados;
     }
+    
+    public Equipo leerEquipo(int idEquipo) throws ExcepcionNF {
+        
+        Equipo eq = null;
+        String dql = "SELECT * FROM equipo WHERE id_equipo = " + idEquipo;
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+
+            ResultSet resultado = sentencia.executeQuery(dql);
+            if (resultado.next()) {
+                eq = new Equipo();
+                eq.setIdEquipo(resultado.getInt("ID_EQUIPO"));
+                eq.setNombre(resultado.getString("NOMBRE"));
+                eq.setCiudad(resultado.getString("CIUDAD"));
+                eq.setEntrenador(resultado.getString("ENTRENADOR"));
+                eq.setGrupo(resultado.getString("GRUPO"));
+            }
+            resultado.close();
+
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+
+            ExcepcionNF e = new ExcepcionNF();
+
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+
+            throw e;
+        }
+        return eq;
+    }
 }

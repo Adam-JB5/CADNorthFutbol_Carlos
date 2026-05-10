@@ -186,11 +186,10 @@ class HiloCliente extends Thread {
                     respuesta.setMensaje("Lista de equipos recuperada.");
                     break;
 
-                    //
                 case READ:
-                    List<Jugador> jugadores = cad.leerJugadoresPorEquipo(peticion.getIdEquipo());
-                    respuesta.setJugadores(jugadores);
-                    respuesta.setExito(jugadores != null);
+                    Equipo equipo = cad.leerEquipo(peticion.getIdEquipo());
+                    respuesta.setEquipo(equipo);
+                    respuesta.setExito(equipo != null);
                     respuesta.setMensaje("Jugadores del equipo recuperados.");
                     break;
 
