@@ -122,6 +122,13 @@ class HiloCliente extends Thread {
                     respuesta.setExito(lista != null);
                     respuesta.setMensaje("Lista de noticias recuperada.");
                     break;
+                    
+                case READ:
+                    Noticia noticia = cad.leerNoticia(peticion.getIdNoticia());
+                    respuesta.setNoticia(noticia);
+                    respuesta.setExito(noticia != null);
+                    respuesta.setMensaje("Noticia recuperada");
+                    break;
 
                 default:
                     respuesta.setExito(false);
