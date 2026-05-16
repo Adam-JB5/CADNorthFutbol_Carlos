@@ -83,6 +83,9 @@ class HiloCliente extends Thread {
             } else if (objeto instanceof PeticionEventoPartido) {
                 System.out.println("DEBUG: Es PeticionEventoPartido");
                 manejarEventoPartidos((PeticionEventoPartido) objeto, oos, cad);
+            } else if (objeto instanceof PeticionClasificacion) {
+                System.out.println("DEBUG: Es PeticionClasificacion");
+                manejarClasificacion((PeticionClasificacion) objeto, oos, cad);
             } else {
                 System.out.println("DEBUG: El objeto NO es de ningun tipo conocido");
             }
@@ -133,7 +136,7 @@ class HiloCliente extends Thread {
                     respuesta.setExito(lista != null);
                     respuesta.setMensaje("Lista de noticias recuperada.");
                     break;
-                    
+
                 case READ_BY_TEAM:
                     ArrayList<Noticia> listaNoticiasEquipo = cad.leerNoticiasPorEquipo(peticion.getId());
                     respuesta.setNoticias(listaNoticiasEquipo);
@@ -451,13 +454,13 @@ class HiloCliente extends Thread {
                     respuesta.setExito(listaSeguidos != null);
                     respuesta.setMensaje("Lista de partidos seguidos recuperada.");
                     break;
-                    
+
                 case READ_BY_TEAM:
-                   ArrayList<Partido> listaEquipo = cad.leerPartidosPorEquipo(peticion.getId());
-                   respuesta.setPartidos(listaEquipo);
-                   respuesta.setExito(listaEquipo != null);
-                   respuesta.setMensaje("Lista de partidos seguidos recuperada.");
-                   break;
+                    ArrayList<Partido> listaEquipo = cad.leerPartidosPorEquipo(peticion.getId());
+                    respuesta.setPartidos(listaEquipo);
+                    respuesta.setExito(listaEquipo != null);
+                    respuesta.setMensaje("Lista de partidos seguidos recuperada.");
+                    break;
 
                 default:
                     respuesta.setExito(false);
@@ -583,5 +586,31 @@ class HiloCliente extends Thread {
         oos.writeObject(respuesta);
         oos.flush();
         System.out.println("DEBUG: Respuesta de EventoPartido enviada a Android");
+    }
+
+    private void manejarClasificacion(PeticionClasificacion peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
+        System.out.println("DEBUG: Entrando en manejarClasificacion... Operación: " + peticion.getTipoOperacion());
+        RespuestaClasificacion respuesta = new RespuestaClasificacion();
+        try {
+            switch (peticion.getTipoOperacion()) {
+                case READ_BY_GRUPO:
+                    ArrayList<EquipoClasificacion> equipos = cad.leerClasificacionPorGrupo(peticion.getGrupo());
+                    respuesta.setExito(true);
+                    respuesta.setEquipos(equipos);
+                    break;
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación no soportada.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error en manejarClasificacion: " + e.getMessage());
+            e.printStackTrace();
+            respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
+        }
+        oos.writeObject(respuesta);
+        oos.flush();
+        System.out.println("DEBUG: Respuesta de Clasificacion enviada a Android");
     }
 }

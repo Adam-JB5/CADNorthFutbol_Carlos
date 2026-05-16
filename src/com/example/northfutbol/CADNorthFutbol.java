@@ -1969,4 +1969,68 @@ public class CADNorthFutbol {
         return partidos;
     }
 
+    public ArrayList<EquipoClasificacion> leerClasificacionPorGrupo(String grupo) throws ExcepcionNF {
+        ArrayList<EquipoClasificacion> clasificacion = new ArrayList<>();
+        String dql = "SELECT e.id_equipo, e.nombre, "
+                + "COUNT(p.id_partido) AS pj, "
+                + "NVL(SUM(CASE "
+                + "  WHEN p.id_local = e.id_equipo AND p.goles_local > p.goles_visitante THEN 1 "
+                + "  WHEN p.id_visitante = e.id_equipo AND p.goles_visitante > p.goles_local THEN 1 "
+                + "  ELSE 0 END), 0) AS pg, "
+                + "NVL(SUM(CASE WHEN p.goles_local = p.goles_visitante THEN 1 ELSE 0 END), 0) AS pe, "
+                + "NVL(SUM(CASE "
+                + "  WHEN p.id_local = e.id_equipo AND p.goles_local < p.goles_visitante THEN 1 "
+                + "  WHEN p.id_visitante = e.id_equipo AND p.goles_visitante < p.goles_local THEN 1 "
+                + "  ELSE 0 END), 0) AS pp, "
+                + "NVL(SUM(CASE WHEN p.id_local = e.id_equipo THEN p.goles_local ELSE p.goles_visitante END), 0) AS gf, "
+                + "NVL(SUM(CASE WHEN p.id_local = e.id_equipo THEN p.goles_visitante ELSE p.goles_local END), 0) AS gc, "
+                + "NVL(SUM(CASE WHEN p.id_local = e.id_equipo THEN p.goles_local - p.goles_visitante "
+                + "         ELSE p.goles_visitante - p.goles_local END), 0) AS gd, "
+                + "NVL(SUM(CASE "
+                + "  WHEN p.id_local = e.id_equipo AND p.goles_local > p.goles_visitante THEN 3 "
+                + "  WHEN p.id_visitante = e.id_equipo AND p.goles_visitante > p.goles_local THEN 3 "
+                + "  WHEN p.goles_local = p.goles_visitante THEN 1 "
+                + "  ELSE 0 END), 0) AS puntos "
+                + "FROM equipo e "
+                + "LEFT JOIN partido p ON (e.id_equipo = p.id_local OR e.id_equipo = p.id_visitante) "
+                + "AND p.estado = 'F' "
+                + "WHERE e.grupo = '" + grupo + "' "
+                + "GROUP BY e.id_equipo, e.nombre "
+                + "ORDER BY puntos DESC, gd DESC, gf DESC";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            ResultSet resultado = sentencia.executeQuery(dql);
+
+            while (resultado.next()) {
+                EquipoClasificacion ec = new EquipoClasificacion();
+                ec.setIdEquipo(resultado.getInt("ID_EQUIPO"));
+                ec.setNombre(resultado.getString("NOMBRE"));
+                ec.setPj(resultado.getInt("PJ"));
+                ec.setPg(resultado.getInt("PG"));
+                ec.setPe(resultado.getInt("PE"));
+                ec.setPp(resultado.getInt("PP"));
+                ec.setGf(resultado.getInt("GF"));
+                ec.setGc(resultado.getInt("GC"));
+                ec.setGd(resultado.getInt("GD"));
+                ec.setPuntos(resultado.getInt("PUNTOS"));
+                clasificacion.add(ec);
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+        System.out.println("DEBUG: Clasificacion grupo=" + grupo + " equipos encontrados=" + clasificacion.size());
+        return clasificacion;
+    }
+
 }
