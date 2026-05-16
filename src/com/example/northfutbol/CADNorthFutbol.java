@@ -1657,7 +1657,8 @@ public class CADNorthFutbol {
     public ArrayList<Comentario> leerComentariosPorNoticia(Integer idNoticia) throws ExcepcionNF {
         ArrayList<Comentario> comentarios = new ArrayList<>();
         String dql = "SELECT c.*, "
-                + "u.nombre AS nombre_usuario, u.email AS email_usuario, u.rol AS rol_usuario "
+                + "u.nombre AS nombre_usuario, u.email AS email_usuario, "
+                + "u.rol AS rol_usuario, u.foto_perfil AS foto_perfil "
                 + "FROM comentario c "
                 + "JOIN usuario u ON c.id_usuario = u.id_usuario "
                 + "WHERE c.id_noticia = " + idNoticia + " "
@@ -1680,6 +1681,7 @@ public class CADNorthFutbol {
                 usuario.setNombre(resultado.getString("NOMBRE_USUARIO"));
                 usuario.setEmail(resultado.getString("EMAIL_USUARIO"));
                 usuario.setRol(resultado.getString("ROL_USUARIO"));
+                usuario.setFotoPerfil(resultado.getString("FOTO_PERFIL"));
                 c.setUsuario(usuario);
 
                 c.setContenido(resultado.getString("CONTENIDO"));
@@ -1766,9 +1768,9 @@ public class CADNorthFutbol {
         }
         return registrosAfectados;
     }
-    
+
     public Equipo leerEquipo(int idEquipo) throws ExcepcionNF {
-        
+
         Equipo eq = null;
         String dql = "SELECT * FROM equipo WHERE id_equipo = " + idEquipo;
         try {
