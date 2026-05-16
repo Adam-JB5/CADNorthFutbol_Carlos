@@ -29,11 +29,7 @@ public class PeticionPartido implements Serializable{
         READ_ALL,   // Lee todos los partido
         UPDATE,     // Modifica un partido
         READ_BY_FOLLOWED,
-        LOGIN,
-        REGISTER,
-        UPDATE_USER_NAME_EMAIL,
-        DELETE,     //
-        PING        //
+        READ_BY_TEAM
     }
     
     // 3. ¿QUÉ QUIERES HACER?

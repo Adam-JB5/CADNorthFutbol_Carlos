@@ -133,9 +133,16 @@ class HiloCliente extends Thread {
                     respuesta.setExito(lista != null);
                     respuesta.setMensaje("Lista de noticias recuperada.");
                     break;
+                    
+                case READ_BY_TEAM:
+                    ArrayList<Noticia> listaNoticiasEquipo = cad.leerNoticiasPorEquipo(peticion.getId());
+                    respuesta.setNoticias(listaNoticiasEquipo);
+                    respuesta.setExito(listaNoticiasEquipo != null);
+                    respuesta.setMensaje("Lista de noticias recuperada.");
+                    break;
 
                 case READ:
-                    Noticia noticia = cad.leerNoticia(peticion.getIdNoticia());
+                    Noticia noticia = cad.leerNoticia(peticion.getId());
                     respuesta.setNoticia(noticia);
                     respuesta.setExito(noticia != null);
                     respuesta.setMensaje("Noticia recuperada");
@@ -444,6 +451,13 @@ class HiloCliente extends Thread {
                     respuesta.setExito(listaSeguidos != null);
                     respuesta.setMensaje("Lista de partidos seguidos recuperada.");
                     break;
+                    
+                case READ_BY_TEAM:
+                   ArrayList<Partido> listaEquipo = cad.leerPartidosPorEquipo(peticion.getId());
+                   respuesta.setPartidos(listaEquipo);
+                   respuesta.setExito(listaEquipo != null);
+                   respuesta.setMensaje("Lista de partidos seguidos recuperada.");
+                   break;
 
                 default:
                     respuesta.setExito(false);

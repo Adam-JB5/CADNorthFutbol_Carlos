@@ -1818,8 +1818,8 @@ public class CADNorthFutbol {
                 + "JOIN equipo eq ON j.id_equipo = eq.id_equipo "
                 + "WHERE e.id_partido = " + idPartido + " "
                 + "ORDER BY e.minuto ASC";
-        
-        System.out.println("DEBUG SQL: " + dql); 
+
+        System.out.println("DEBUG SQL: " + dql);
         try {
             conectarBD();
             Statement sentencia = conexion.createStatement();
@@ -1864,6 +1864,109 @@ public class CADNorthFutbol {
         }
         return eventos;
     }
-    
-    
+
+    public ArrayList<Noticia> leerNoticiasPorEquipo(Integer idEquipo) throws ExcepcionNF {
+        ArrayList<Noticia> noticias = new ArrayList<>();
+        String dql = "SELECT n.*, e.nombre AS nombre_equipo "
+                + "FROM noticia n "
+                + "JOIN equipo e ON n.id_equipo = e.id_equipo "
+                + "WHERE n.id_equipo = " + idEquipo + " "
+                + "ORDER BY n.fecha_creacion DESC";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            ResultSet resultado = sentencia.executeQuery(dql);
+
+            while (resultado.next()) {
+                Noticia n = new Noticia();
+                n.setIdNoticia(resultado.getInt("ID_NOTICIA"));
+                n.setTitulo(resultado.getString("TITULO"));
+                n.setSubtitulo(resultado.getString("SUBTITULO"));
+                n.setImagen(resultado.getString("IMAGEN"));
+                n.setContenido(resultado.getString("CONTENIDO"));
+                n.setFechaCreacion(resultado.getDate("FECHA_CREACION"));
+
+                Equipo equipo = new Equipo();
+                equipo.setIdEquipo(idEquipo);
+                equipo.setNombre(resultado.getString("NOMBRE_EQUIPO"));
+                n.setEquipo(equipo);
+
+                noticias.add(n);
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+        return noticias;
+    }
+
+    public ArrayList<Partido> leerPartidosPorEquipo(Integer idEquipo) throws ExcepcionNF {
+        ArrayList<Partido> partidos = new ArrayList<>();
+        String dql = "SELECT p.*, "
+                + "el.id_equipo AS id_local, el.nombre AS nombre_local, el.ciudad AS ciudad_local, "
+                + "el.entrenador AS entrenador_local, el.grupo AS grupo_local, "
+                + "ev.id_equipo AS id_visitante, ev.nombre AS nombre_visitante, ev.ciudad AS ciudad_visitante, "
+                + "ev.entrenador AS entrenador_visitante, ev.grupo AS grupo_visitante "
+                + "FROM partido p "
+                + "JOIN equipo el ON p.id_local = el.id_equipo "
+                + "JOIN equipo ev ON p.id_visitante = ev.id_equipo "
+                + "WHERE p.id_local = " + idEquipo + " OR p.id_visitante = " + idEquipo + " "
+                + "ORDER BY p.fecha DESC";
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            ResultSet resultado = sentencia.executeQuery(dql);
+
+            while (resultado.next()) {
+                Partido p = new Partido();
+                p.setIdPartido(resultado.getInt("ID_PARTIDO"));
+                p.setFecha(resultado.getDate("FECHA"));
+                p.setEstadio(resultado.getString("ESTADIO"));
+                p.setEstado(resultado.getString("ESTADO"));
+                p.setGolesLocal(resultado.getInt("GOLES_LOCAL"));
+                p.setGolesVisitante(resultado.getInt("GOLES_VISITANTE"));
+
+                Equipo local = new Equipo();
+                local.setIdEquipo(resultado.getInt("ID_LOCAL"));
+                local.setNombre(resultado.getString("NOMBRE_LOCAL"));
+                local.setCiudad(resultado.getString("CIUDAD_LOCAL"));
+                local.setEntrenador(resultado.getString("ENTRENADOR_LOCAL"));
+                local.setGrupo(resultado.getString("GRUPO_LOCAL"));
+                p.setLocal(local);
+
+                Equipo visitante = new Equipo();
+                visitante.setIdEquipo(resultado.getInt("ID_VISITANTE"));
+                visitante.setNombre(resultado.getString("NOMBRE_VISITANTE"));
+                visitante.setCiudad(resultado.getString("CIUDAD_VISITANTE"));
+                visitante.setEntrenador(resultado.getString("ENTRENADOR_VISITANTE"));
+                visitante.setGrupo(resultado.getString("GRUPO_VISITANTE"));
+                p.setVisitante(visitante);
+
+                partidos.add(p);
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+        return partidos;
+    }
+
 }

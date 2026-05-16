@@ -28,11 +28,8 @@ public class PeticionNoticia implements Serializable{
         READ,       // Lee un noticia
         READ_ALL,   // Lee todos los noticia
         UPDATE,     // Modifica un noticia
-        LOGIN,
-        REGISTER,
-        UPDATE_USER_NAME_EMAIL,
+        READ_BY_TEAM,
         DELETE,     //
-        PING        //
     }
     
     // 3. ¿QUÉ QUIERES HACER?
@@ -42,7 +39,7 @@ public class PeticionNoticia implements Serializable{
     private Noticia noticia;
     
     // 5. ¿CON QUÉ ID? (Read/Delete)
-    private int idNoticia;
+    private int id;
     
     // 6. CONSTRUCTORES
     // 6.1. Vacío
@@ -58,13 +55,13 @@ public class PeticionNoticia implements Serializable{
     // 6.3. Contructor para Read/Delete
     public PeticionNoticia(TipoOperacion tipoOperacion, int idNoticia) {
         this.tipoOperacion = tipoOperacion;
-        this.idNoticia = idNoticia;
+        this.id = idNoticia;
     }
     
     // 6.4. Contructor para Create/Update
     public PeticionNoticia(TipoOperacion tipoOperacion, int idNoticia, Noticia noticia) {
         this.tipoOperacion = tipoOperacion;
-        this.idNoticia = idNoticia;
+        this.id = idNoticia;
         this.noticia = noticia;
     }
     
@@ -92,12 +89,12 @@ public class PeticionNoticia implements Serializable{
         this.noticia = noticia;
     }
 
-    public int getIdNoticia() {
-        return idNoticia;
+    public int getId() {
+        return id;
     }
 
-    public void setIdNoticia(int idNoticia) {
-        this.idNoticia = idNoticia;
+    public void setId(int idNoticia) {
+        this.id = idNoticia;
     }
     
     
