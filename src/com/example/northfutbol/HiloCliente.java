@@ -19,6 +19,7 @@ import pojosnorthfutbol.Noticia;
 import pojosnorthfutbol.Usuario;
 import pojosnorthfutbol.Partido;
 import pojosnorthfutbol.Comentario;
+import pojosnorthfutbol.EventoPartido;
 
 /**
  * HILO CLIENTE ===================== Esta clase representa al recepcionista que
@@ -79,6 +80,9 @@ class HiloCliente extends Thread {
             } else if (objeto instanceof PeticionUsuarioEquiposSeguidos) {
                 System.out.println("DEBUG: Es PeticionUsuarioEquiposSeguidos");
                 manejarUsuarioEquiposSeguidos((PeticionUsuarioEquiposSeguidos) objeto, oos, cad);
+            } else if (objeto instanceof PeticionEventoPartido) {
+                System.out.println("DEBUG: Es PeticionEventoPartido");
+                manejarEventoPartidos((PeticionEventoPartido) objeto, oos, cad);
             } else {
                 System.out.println("DEBUG: El objeto NO es de ningun tipo conocido");
             }
@@ -388,7 +392,7 @@ class HiloCliente extends Thread {
                     respuesta.setExito(lista != null);
                     respuesta.setMensaje("Lista de jugadores recuperada.");
                     break;
-                    
+
                 case READ_BY_TEAM:
                     ArrayList<Jugador> listaPorEquipo = cad.leerJugadoresPorEquipo(peticion.getId());
                     respuesta.setJugadores(listaPorEquipo);
@@ -539,5 +543,31 @@ class HiloCliente extends Thread {
         oos.writeObject(respuesta);
         oos.flush();
         System.out.println("DEBUG: Respuesta de UsuarioEquiposSeguidos enviada a Android");
+    }
+
+    private void manejarEventoPartidos(PeticionEventoPartido peticion, ObjectOutputStream oos, CADNorthFutbol cad) throws Exception {
+        System.out.println("DEBUG: Entrando en manejarEventoPartido... Operación: " + peticion.getTipoOperacion());
+        RespuestaEventoPartido respuesta = new RespuestaEventoPartido();
+        try {
+            switch (peticion.getTipoOperacion()) {
+                case READ_BY_PARTIDO:
+                    ArrayList<EventoPartido> eventos = cad.leerEventosPorPartido(peticion.getId());
+                    respuesta.setExito(true);
+                    respuesta.setEventoPartidos(eventos);
+                    break;
+                default:
+                    respuesta.setExito(false);
+                    respuesta.setMensaje("Operación de EventoPartido no soportada.");
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("DEBUG: Error en manejarEventoPartido: " + e.getMessage());
+            e.printStackTrace();
+            respuesta.setExito(false);
+            respuesta.setMensaje("Error en el servidor: " + e.getMessage());
+        }
+        oos.writeObject(respuesta);
+        oos.flush();
+        System.out.println("DEBUG: Respuesta de EventoPartido enviada a Android");
     }
 }

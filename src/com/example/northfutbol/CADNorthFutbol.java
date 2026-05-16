@@ -21,6 +21,7 @@ import pojosnorthfutbol.Usuario;
 import pojosnorthfutbol.Partido;
 import pojosnorthfutbol.Jornada;
 import pojosnorthfutbol.Comentario;
+import pojosnorthfutbol.EventoPartido;
 
 /**
  *
@@ -1804,4 +1805,65 @@ public class CADNorthFutbol {
         }
         return eq;
     }
+
+    public ArrayList<EventoPartido> leerEventosPorPartido(Integer idPartido) throws ExcepcionNF {
+        ArrayList<EventoPartido> eventos = new ArrayList<>();
+        String dql = "SELECT e.id_evento, e.id_partido, e.id_jugador, "
+                + "e.tipo_evento, e.minuto, "
+                + "j.nombre AS nombre_jugador, j.apellido AS apellido_jugador, "
+                + "j.dorsal AS dorsal_jugador, "
+                + "eq.id_equipo AS id_equipo_jugador "
+                + "FROM evento_partido e "
+                + "JOIN jugador j ON e.id_jugador = j.id_jugador "
+                + "JOIN equipo eq ON j.id_equipo = eq.id_equipo "
+                + "WHERE e.id_partido = " + idPartido + " "
+                + "ORDER BY e.minuto ASC";
+        
+        System.out.println("DEBUG SQL: " + dql); 
+        try {
+            conectarBD();
+            Statement sentencia = conexion.createStatement();
+            ResultSet resultado = sentencia.executeQuery(dql);
+
+            while (resultado.next()) {
+                EventoPartido ep = new EventoPartido();
+                ep.setIdEvento(resultado.getInt("ID_EVENTO"));
+
+                Partido partido = new Partido();
+                partido.setIdPartido(idPartido);
+                ep.setPartido(partido);
+
+                Jugador jugador = new Jugador();
+                jugador.setIdJugador(resultado.getInt("ID_JUGADOR"));
+                jugador.setNombre(resultado.getString("NOMBRE_JUGADOR"));
+                jugador.setApellido(resultado.getString("APELLIDO_JUGADOR"));
+                jugador.setDorsal(resultado.getInt("DORSAL_JUGADOR"));
+
+                Equipo equipo = new Equipo();
+                equipo.setIdEquipo(resultado.getInt("ID_EQUIPO_JUGADOR"));
+                jugador.setEquipo(equipo);
+
+                ep.setJugador(jugador);
+                ep.setTipoEvento(resultado.getString("TIPO_EVENTO"));
+                ep.setMinuto(resultado.getInt("MINUTO"));
+
+                eventos.add(ep);
+            }
+
+            resultado.close();
+            sentencia.close();
+            conexion.close();
+
+        } catch (SQLException ex) {
+            ExcepcionNF e = new ExcepcionNF();
+            e.setMensajeErrorUsuario("Error general del sistema. Consulte con el administrador");
+            e.setCodigoErrorBD(ex.getErrorCode());
+            e.setMensajeErrorBD(ex.getMessage());
+            e.setSentenciaSQL(dql);
+            throw e;
+        }
+        return eventos;
+    }
+    
+    
 }
