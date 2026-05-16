@@ -749,7 +749,7 @@ public class CADNorthFutbol {
     public Usuario validarLogin(String email, String contrasenna) throws ExcepcionNF {
         Usuario u = null;
         //Annadido el trim hasta implementar el hasheo
-        String dql = "SELECT * FROM usuario WHERE email = ? AND TRIM(contrasenna) = ?";
+        String dql = "SELECT * FROM usuario WHERE email = ? AND contrasenna = ?";
 
         try {
             conectarBD();
