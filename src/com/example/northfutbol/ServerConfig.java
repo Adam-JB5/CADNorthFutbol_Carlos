@@ -10,7 +10,7 @@ package com.example.northfutbol;
  * @author DAM209
  */
 public class ServerConfig {
-    public static final Environment ENTORNO_ACTUAL = Environment.CLASE;
+    public static final Environment ENTORNO_ACTUAL = Environment.CASA;
     
     public enum Environment {
         CASA, CLASE, IRONTEC;
